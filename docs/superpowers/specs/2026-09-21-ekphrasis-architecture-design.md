@@ -546,6 +546,7 @@ UX flow in Miro:
 4. Exact input/resource limits beyond 10 MB.
 5. Concrete request-volume/rate-limiting strategy.
 6. Exact CLIP embedding generation, Qdrant indexing, and maintenance workflow.
+7. **Low-priority future candidate — Smarthistory integration.** Smarthistory is explicitly not part of the current enrichment architecture or implementation scope. Revisit only as a future candidate if API availability, programmatic-access permissions, and sufficiently reliable artwork-level matching can be confirmed. No scraping or access-restriction bypass is permitted.
 
 ## 17. Approval gate
 
