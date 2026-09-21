@@ -4,7 +4,7 @@
 
 **Goal:** Build the Ekphrasis MVP as a Next.js application that accepts a painting photo, identifies a canonical museum artwork through Vision and museum adapters with deterministic evidence gating, enriches the selected result with Wikipedia/Wikidata facts, and renders the specified mobile-first result/no-match/error experience.
 
-**Architecture:** A server-side Next.js pipeline owns image validation, hashing/cache, Google Vision candidate generation, parallel primary museum adapters, normalization/scoring/canonical-source selection, CLIP/Qdrant fallback, enrichment, and result construction. The frontend is provider-independent and consumes only `IdentificationResult`; all external APIs remain behind adapters and secrets remain server-side. The repository currently contains only the approved architecture spec, so implementation begins with the application scaffold and test harness before building the pipeline.
+**Architecture:** A server-side Next.js pipeline owns image validation, hashing/cache, Google Vision candidate generation, parallel primary museum adapters, normalization/scoring/canonical-source selection, CLIP/Qdrant fallback, enrichment, and result construction. The frontend is provider-independent and consumes only `IdentificationResult`; all external APIs remain behind adapters and secrets remain server-side. The repository currently contains only the approved architecture spec and implementation plan, so the first project deliverable is the English Miro architecture map, followed by the application scaffold and test harness.
 
 **Tech Stack:** Next.js App Router + TypeScript; React; Vitest for unit/integration/pipeline tests; Playwright for browser tests; Google Cloud Vision Web Detection; The Met Collection API; Rijksmuseum API; Art Institute of Chicago API; Smithsonian Open Access API; Wikidata/Wikipedia; Qdrant; Upstash Redis-compatible cache/rate-limit service; Vercel runtime. CLIP corpus generation/index maintenance is an offline batch workflow and is not a request-time dependency.
 
@@ -65,6 +65,29 @@ The exact numeric rate limit is chosen during Task 4 as part of the implementati
 6. **Fallback corpus availability:** Qdrant fallback must be backed by a populated, versioned corpus before the fallback path is considered complete. Tests must prove query payloads resolve to real museum/object identities from the indexed corpus.
 7. **Scope integrity:** secondary museum APIs are documented but not silently omitted; MVP implementation and README must explicitly state the four-source boundary.
 8. **Execution reproducibility:** runtime choices in this plan are fixed before coding; workers must not substitute infrastructure or provider patterns without a separate plan/spec change.
+
+---
+
+### Task 0: Create the English Miro architecture map before coding
+
+**Files:**
+- Create/update: Miro mind map through the connected Miro integration
+- Modify: `README.md` only if the repository needs a link or status note after the board is created
+
+**Interfaces:**
+- Consumes: the approved architecture spec and the fixed runtime decisions already recorded in this plan.
+- Produces: the required English Miro architecture/mind map that becomes the visual reference for implementation.
+
+- [ ] **Step 1: Create/update the Miro mind map before any application scaffold or code task begins.**
+- [ ] **Step 2: Build the map from the approved spec, not from guessed implementation details.**
+- [ ] **Step 3: Include functionality, tech stack, one node per API/data source, UX flow, design system, hosting/deployment, and MVP → v2 roadmap.**
+- [ ] **Step 4: Show the end-to-end pipeline explicitly: upload → validation/normalization → Vision → candidate extraction → parallel museum search → matching/canonical selection → CLIP/Qdrant fallback → enrichment → result/no-match/error.**
+- [ ] **Step 5: Explicitly distinguish the four MVP museum sources from future/secondary sources and show the CLIP/Qdrant offline corpus-maintenance path.**
+- [ ] **Step 6: Keep all board copy in English and preserve the UX states: upload, processing, match, no-match, and error.**
+- [ ] **Step 7: Review the finished map against the approved spec for missing branches, contradictory arrows, or accidental scope expansion.**
+- [ ] **Step 8: Commit** `docs: add Ekphrasis architecture mind map` if a repository-side status/link change was made.
+
+**Sequencing rule:** Task 0 is the first implementation deliverable. No application code task should begin until the Miro architecture map has been created and reviewed against the approved spec.
 
 ---
 
@@ -371,25 +394,7 @@ The exact numeric rate limit is chosen during Task 4 as part of the implementati
 
 ---
 
-### Task 12: Create the English Miro architecture map before deployment hardening
-
-**Files:**
-- Create/update: Miro mind map through the connected Miro integration
-- Modify: `README.md`
-
-**Interfaces:**
-- Consumes: approved architecture spec and implementation decisions from Tasks 1–11.
-- Produces: the required English Miro architecture/mind map.
-
-- [ ] **Step 1: Create/update the Miro mind map before deployment work begins**, preserving the original project requirement that Miro is an early architectural deliverable.
-- [ ] **Step 2: Include functionality, tech stack, one node per API/data source, UX flow, design system, hosting/deployment, and MVP → v2 roadmap.**
-- [ ] **Step 3: Explicitly distinguish MVP primary sources from future/secondary museum sources and show the CLIP/Qdrant offline corpus-maintenance path.**
-- [ ] **Step 4: Verify all Miro copy is English and that the UX flow is `upload → processing → result card → no-match state / error state`.**
-- [ ] **Step 5: Commit** `docs: add Ekphrasis architecture mind map`.
-
----
-
-### Task 13: Add end-to-end verification and deployment configuration
+### Task 12: Add end-to-end verification and deployment configuration
 
 **Files:**
 - Create: `tests/e2e/identify.spec.ts`
@@ -424,11 +429,11 @@ The exact numeric rate limit is chosen during Task 4 as part of the implementati
 - Section 8: Task 9 and the style constraints in Task 6/11.
 - Section 9: Task 11.
 - Section 10: Task 11.
-- Section 11: Tasks 2–11 plus Task 13.
-- Section 12: Tasks 3, 4, 5, 6, 8, 10, 13.
-- Section 13: Task 13 plus Task 12.
+- Section 11: Tasks 2–11 plus Task 12.
+- Section 12: Tasks 3, 4, 5, 6, 8, 10, 12.
+- Section 13: Task 12 plus Task 0.
 - Section 14: Task 1 and the implementation files in later tasks.
-- Section 15: Task 12; Miro is intentionally moved earlier than deployment hardening.
+- Section 15: Task 0; Miro is now the first implementation deliverable.
 - Section 16: the implementation choices identified as execution-risk are resolved in the plan; Smarthistory remains future scope in the spec.
 - Section 17: written-spec approval has already been received before this plan.
 
@@ -437,7 +442,7 @@ The exact numeric rate limit is chosen during Task 4 as part of the implementati
 - **Unresolved infrastructure drift:** fixed cache/rate-limit backend, provider timeout budgets, image-processing boundary, read-only runtime Qdrant behavior, pinned CLIP/index versioning, and corpus refresh procedure.
 - **Execution abstraction:** added concrete files, interfaces, tests, timeout behavior, failure boundaries, and promotion criteria to the highest-risk tasks.
 - **Secondary museum scope:** explicitly documented the four-source MVP boundary and future/secondary sources rather than silently omitting them.
-- **Miro sequencing:** moved Miro to an explicit pre-deployment task so the architecture deliverable is produced before final hardening/deployment.
+- **Miro sequencing:** Miro is now Task 0, based directly on the approved spec and fixed runtime decisions, and must be reviewed before any application code task begins.
 - **Style consistency:** made `artwork.style` explicit in the global contract and review focus and kept it present in domain, adapter, matching, and UI tasks.
 
 ### Placeholder scan
@@ -452,10 +457,10 @@ The plan establishes domain types in Task 2 before adapter, matching, enrichment
 - Museum image provenance → Task 11 UI tests.
 - Degraded operation → Task 10 pipeline tests.
 - Cleanup → Task 3 lifecycle tests + Task 10 pipeline tests.
-- Qdrant population → Task 8 corpus build/validation + Task 13 deployment gate.
+- Qdrant population → Task 8 corpus build/validation + Task 12 deployment gate.
 
 ### Repository reality check
-The repository currently contains the approved architecture spec and this implementation plan; no application scaffold, package manifest, or test suite exists yet. Therefore the first implementation task is intentionally repository bootstrap rather than assuming nonexistent files.
+The repository currently contains the approved architecture spec and this implementation plan; no application scaffold, package manifest, or test suite exists yet. Therefore Task 0 is intentionally the first implementation deliverable, followed by repository bootstrap.
 
 ### Execution boundary
 This plan does not implement application code. It is the approved-spec-to-code roadmap and must be reviewed before implementation begins.
