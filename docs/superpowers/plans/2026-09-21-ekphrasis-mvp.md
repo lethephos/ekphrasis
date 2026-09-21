@@ -368,7 +368,7 @@
 - Section 17: written-spec approval has already been received before this plan.
 
 ### Placeholder scan
-No TODO, TBD, FIXME, “implement later,” or unspecified “add validation/edge cases” steps are used as substitutes for concrete work. Open implementation choices from the approved spec are assigned to explicit tasks.
+The plan uses concrete implementation steps throughout; no step defers necessary details to an unspecified future action. Open implementation choices from the approved spec are assigned to explicit tasks.
 
 ### Type/interface consistency
 The plan establishes domain types in Task 2 before adapter, matching, enrichment, pipeline, and UI consumers. Each later task consumes the named interfaces and returns the specified result shapes.
