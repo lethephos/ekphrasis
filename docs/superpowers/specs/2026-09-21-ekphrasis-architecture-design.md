@@ -58,9 +58,14 @@ IdentificationResult
 │   ├── title
 │   ├── year
 │   ├── medium
-│   └── museum
+│   ├── museum
+│   └── style
 ├── context
 ├── detail
+├── related_reading[]
+│   ├── title
+│   ├── url
+│   └── source: "wikipedia"
 ├── source
 ├── confidence: low | medium | high
 └── diagnostics
@@ -249,6 +254,23 @@ Only facts reliably linked to the selected artwork or artist are used. If no rel
 
 Enrichment cannot override identity established by museum candidates and matching.
 
+### Style
+
+`artwork.style` is an optional museum-supplied artistic style/movement field, distinct from `artwork.medium`.
+
+The adapter must never infer or classify style from the image, artist, title, medium, period, or other metadata. If the source does not explicitly provide a style/movement value, `style=null`.
+
+For the four primary museum APIs:
+
+| Source | Documented object field | Ekphrasis mapping | Rule |
+|---|---|---|---|
+| The Met Collection API | `classification` | no style mapping | The documented `classification` describes the artwork/object type (e.g. Paintings), not an artistic movement; no dedicated style/movement field is documented. Set `style=null`. urlThe Met Collection API documentationhttps://metmuseum.github.io/ |
+| Rijksmuseum Data Services | object metadata / controlled-vocabulary concepts; search documents `type`, `material`, and `technique` | no style mapping | No dedicated style/movement field is documented in the current object metadata/search documentation. Do not reinterpret classification/type as artistic style. Set `style=null`. urlRijksmuseum Data Services documentationhttps://data.rijksmuseum.nl/docs/ |
+| Art Institute of Chicago API | `style_id`, `style_title`, `style_ids`, `style_titles` | `style_title` as the preferred single style value | Use the explicitly supplied preferred style term; if unavailable, set `style=null`. The API separately exposes `classification_title` / `classification_titles`. urlArt Institute of Chicago API documentationhttps://api.artic.edu/docs/ |
+| Smithsonian Open Access API | documented descriptive fields include `objectType`, topic, physical description, etc. | no style mapping | No dedicated style/movement field is documented in the available Open Access field documentation. Do not reinterpret `objectType`/classification or topic as artistic style. Set `style=null`. urlSmithsonian Open Access Developer Toolshttps://www.si.edu/openaccess/devtools |
+
+`medium` remains the source-supplied material/technique field. `style` is the separate artistic-direction field; neither replaces the other.
+
 ## 9. Frontend and UX
 
 State machine:
@@ -263,12 +285,44 @@ Client-side validation is UX only; server validation is authoritative.
 
 Match result includes:
 - The Match;
+- the original artwork image, rendered from `source.image_url` supplied directly by the museum source;
+- Artist, Year, and Medium provenance labels;
+- the museum-supplied Style value when available;
 - The Context;
 - The Detail;
 - The Source;
 - confidence.
 
+The Match card must always display the original artwork image using `source.image_url` from the selected museum source. The UI must not substitute an independently discovered image or a generated/reconstructed image.
+
+The Match card must always display `medium` alongside the other provenance labels (Artist, Year, Medium); it is not omitted by default. `medium` represents material/technique, while `style` represents artistic movement/style. They are distinct fields.
+
+The Style label/value is shown only when `artwork.style` is non-null; absence remains neutral and does not trigger an error.
+
 Degraded match copy may explain that some sources were temporarily unavailable.
+
+### Related reading (optional, experimental)
+
+The API may expose an optional `related_reading` array:
+
+```
+related_reading[]
+├── title
+├── url
+└── source: "wikipedia"
+```
+
+Related reading is derived only from the Wikipedia article already retrieved for enrichment of The Context: the article about the artist, or a separate article about the specific artwork when one exists. It uses the article's `External links` / `Further reading` section and introduces no new external dependency.
+
+Rules:
+- include at most 3 links;
+- preserve article order; take the first qualifying links and do not rank them by quality;
+- exclude social-media domains, commercial shopping/store domains, and pages requiring registration or a subscription;
+- if the article is not found or contains no qualifying links, return `related_reading=[]`;
+- do not perform fallback web searches for related reading;
+- the UI block is titled **Related reading** and is hidden when the array is empty;
+- this feature is optional and experimental and does not block Definition of Done;
+- it may be disabled or removed after the initial usefulness evaluation.
 
 Degraded no-match copy must not imply that the artwork does not exist in databases.
 
