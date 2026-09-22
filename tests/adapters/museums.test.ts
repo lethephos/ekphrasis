@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { MetAdapter } from "../../lib/museums/met";
 import { ArticAdapter } from "../../lib/museums/artic";
+import { SmithsonianAdapter } from "../../lib/museums/smithsonian";
 
 describe("museum adapters", () => {
   it("maps a Met record while preserving absent fields as null", async () => {
@@ -18,6 +19,34 @@ describe("museum adapters", () => {
     const results = await adapter.search("Starry Night");
     expect(results[0].artwork.style).toBeNull();
     expect(results[0].artwork.year).toBe("1889");
+  });
+
+  it("maps Smithsonian nested media and descriptive metadata", async () => {
+    const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      response: {
+        rows: [{
+          title: "Example Painting",
+          content: {
+            descriptiveNonRepeating: {
+              record_link: "https://example.si.edu/object/1",
+              online_media: {
+                media: [{ type: "Images", content: "https://ids.si.edu/example.jpg" }]
+              }
+            },
+            indexedStructured: { date: ["1889"] },
+            freetext: {
+              physicalDescription: [{ label: "Medium", content: "Oil on canvas" }]
+            }
+          }
+        }]
+      }
+    })));
+    const adapter = new SmithsonianAdapter(fetcher as typeof fetch, "test-key");
+    const result = await adapter.search("Example Painting");
+    expect(result[0].source.image_url).toBe("https://ids.si.edu/example.jpg");
+    expect(result[0].source.url).toBe("https://example.si.edu/object/1");
+    expect(result[0].artwork.year).toBe("1889");
+    expect(result[0].artwork.medium).toBe("Oil on canvas");
   });
 
   it("prefers AIC style_title when present", async () => {
