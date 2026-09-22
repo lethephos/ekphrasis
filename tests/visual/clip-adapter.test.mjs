@@ -24,3 +24,24 @@ test('CLIP adapter rejects a non-2D feature tensor', async () => {
 
   await assert.rejects(() => embedder(new Uint8Array([1])), /INVALID_CLIP_OUTPUT/);
 });
+
+
+test('production CLIP embedder wires Transformers.js image feature extraction', async () => {
+  const calls = [];
+  const embedder = createProductionClipEmbedder({
+    model: 'test/clip',
+    pipelineFactory: async (task, model) => {
+      calls.push([task, model]);
+      return async (image) => {
+        assert.equal(image.kind, 'raw-image');
+        return { data: new Float32Array([3, 4]), dims: [1, 2] };
+      };
+    },
+    imageLoader: async (bytes) => {
+      assert.deepEqual([...bytes], [9, 8]);
+      return { kind: 'raw-image' };
+    },
+  });
+  assert.deepEqual(await embedder(new Uint8Array([9, 8])), [0.6, 0.8]);
+  assert.deepEqual(calls, [['image-feature-extraction', 'test/clip']]);
+});
