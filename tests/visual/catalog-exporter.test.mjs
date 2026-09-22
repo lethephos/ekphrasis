@@ -36,3 +36,30 @@ test('catalog exporter retries transient provider responses with bounded backoff
   await exporter.exportMet({ limit: 1 });
   assert.equal(attempts, 3);
 });
+
+
+test('Smithsonian exporter paginates beyond the API page size', async () => {
+  const urls = [];
+  const exporter = createCatalogExporter({
+    fetchImpl: async (url) => {
+      urls.push(String(url));
+      const start = new URL(url).searchParams.get('start') ?? '0';
+      const rows = Number(new URL(url).searchParams.get('rows'));
+      return {
+        ok: true,
+        json: async () => ({
+          response: {
+            rows: Array.from({ length: Math.min(rows, start === '0' ? 2 : 1) }, (_, i) => ({
+              id: `si-${Number(start) + i}`,
+              title: 'Painting',
+              content: { descriptiveNonRepeating: { online_media: { media: [{ content: 'https://img.example/x.jpg' }] } } },
+            })),
+          },
+        }),
+      };
+    },
+  });
+  const records = await exporter.exportSmithsonian({ limit: 3, apiKey: 'key' });
+  assert.equal(records.length, 3);
+  assert.equal(urls.length, 2);
+});
