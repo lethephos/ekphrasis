@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+
+export const runtime = "nodejs";
 import { identifyImage } from "../../../lib/pipeline/identify";
 import { UpstashResultCache } from "../../../lib/cache/upstash";
 import { SlidingWindowRateLimiter, createRequestIdentity } from "../../../lib/rate-limit/rate-limit";
