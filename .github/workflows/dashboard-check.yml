@@ -17,6 +17,10 @@ jobs:
           find app lib site tests -name '*.js' -o -name '*.mjs' | sort | while read -r file; do
             node --check "$file"
           done
+      - name: Install Node dependencies
+        run: npm install --no-audit --no-fund
+      - name: Run test suite
+        run: npm test
       - name: Validate dashboard invariants
         run: node tests/dashboard-invariants.mjs
       - name: Verify project copy cleanup
