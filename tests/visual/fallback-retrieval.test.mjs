@@ -46,3 +46,32 @@ test('visual resolver breaks equal-score ties deterministically by museum identi
   assert.equal(result.candidate.institution, 'Alpha');
   assert.equal(result.candidate.objectId, '9');
 });
+
+
+test('visual resolver prefers a metadata-compatible hit over a higher-scoring mismatch', async () => {
+  const resolver = createVisualResolver({
+    embed: async () => [1, 0],
+    search: async () => [
+      { id: 'wrong', score: 0.97, payload: { institution: 'A', objectId: '1', title: 'Wrong' } },
+      { id: 'right', score: 0.91, payload: { institution: 'B', objectId: '2', title: 'Target' } },
+    ],
+    isCompatible: (payload) => payload.title === 'Target',
+  });
+  const result = await resolver.resolve(Buffer.from('x'), { useVisualFallback: true });
+  assert.equal(result.similarity, 0.91);
+  assert.equal(result.candidate.objectId, '2');
+});
+
+test('visual resolver returns no candidate when every hit conflicts with metadata', async () => {
+  const resolver = createVisualResolver({
+    embed: async () => [1, 0],
+    search: async () => [
+      { id: 'wrong-a', score: 0.97, payload: { institution: 'A', objectId: '1', title: 'Wrong A' } },
+      { id: 'wrong-b', score: 0.95, payload: { institution: 'B', objectId: '2', title: 'Wrong B' } },
+    ],
+    isCompatible: () => false,
+  });
+  const result = await resolver.resolve(Buffer.from('x'), { useVisualFallback: true });
+  assert.equal(result.candidate, null);
+  assert.equal(result.similarity, 0.97);
+});
