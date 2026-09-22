@@ -7,6 +7,22 @@ export class SmithsonianAdapter implements MuseumAdapter {
   id = "smithsonian";
   name = "Smithsonian Open Access";
   constructor(private readonly fetcher: Fetcher = fetch, private readonly apiKey = process.env.SMITHSONIAN_API_KEY ?? "") {}
+  async getById(id: string): Promise<ArtworkCandidate | null> {
+    if (!this.apiKey) throw new ProviderError(this.id, "AUTH", "Smithsonian API key is not configured.");
+    const json = await requestJson<{ response?: { rows?: Array<Record<string, unknown>> } }>(
+      this.fetcher,
+      `https://api.si.edu/openaccess/api/v1.0/content/${encodeURIComponent(id)}?api_key=${encodeURIComponent(this.apiKey)}`,
+      this.id
+    );
+    const record = json.response?.rows?.[0];
+    if (!record) return null;
+    return {
+      source: { id: this.id, name: this.name, image_url: extractImage(record), url: extractRecordUrl(record) },
+      artwork: { title: extractTitle(record), artist: null, year: extractYear(record), medium: extractMedium(record), style: null },
+      evidence: emptyEvidence()
+    };
+  }
+
   async search(query: string): Promise<ArtworkCandidate[]> {
     if (!this.apiKey) throw new ProviderError(this.id, "AUTH", "Smithsonian API key is not configured.");
     const json = await requestJson<{ response?: { rows?: Array<Record<string, unknown>> } }>(
