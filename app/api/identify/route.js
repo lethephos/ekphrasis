@@ -1,4 +1,5 @@
 import { createProductionPipeline } from '../../../lib/runtime.js';
+import { readRequestBytes } from '../../../lib/api/body.js';
 
 let pipeline;
 function getPipeline() {
@@ -21,7 +22,7 @@ export async function POST(request) {
       }
       bytes = new Uint8Array(await file.arrayBuffer());
     } else {
-      bytes = new Uint8Array(await request.arrayBuffer());
+      bytes = await readRequestBytes(request);
     }
 
     if (!bytes.byteLength) return Response.json({ status: 'error', code: 'INVALID_INPUT' }, { status: 400 });
