@@ -8,7 +8,7 @@ function response(body) {
 
 test('Rijksmuseum normalizer extracts current Linked Art object identity', () => {
   const record = normalizeRijksmuseum({
-    id: 'https://data.rijksmuseum.nl/31000100988',
+    id: 'https://data.rijksmuseum.nl/90000100988',
     identified_by: [
       { type: 'Identifier', content: 'SK-C-5', classified_as: [{ id: 'https://id.rijksmuseum.nl/22015218' }] },
       { type: 'Name', content: 'The Night Watch', classified_as: [{ id: 'http://vocab.getty.edu/aat/300417200' }] },
@@ -34,43 +34,43 @@ test('Rijksmuseum exporter uses current search pagination and resolves image pro
 
     if (value.startsWith('https://data.rijksmuseum.nl/search/collection')) {
       if (value.includes('pageToken=next')) {
-        return response({ orderedItems: [{ id: 'https://id.rijksmuseum.nl/310002' }] });
+        return response({ orderedItems: [{ id: 'https://id.rijksmuseum.nl/900002' }] });
       }
       return response({
-        orderedItems: [{ id: 'https://id.rijksmuseum.nl/310001' }],
+        orderedItems: [{ id: 'https://id.rijksmuseum.nl/900001' }],
         next: { id: 'https://data.rijksmuseum.nl/search/collection?type=painting&pageToken=next' },
       });
     }
 
-    if (value.includes('310001?_profile=la-framed')) {
+    if (value.includes('900001?_profile=la-framed')) {
       return response({
         identified_by: [{ type: 'Identifier', content: 'SK-A-1', classified_as: [{ id: 'https://id.rijksmuseum.nl/22015218' }] }],
         produced_by: { part: [{ carried_out_by: [{ notation: [{ '@language': 'en', '@value': 'Artist One' }] }] }] },
-        shows: [{ id: 'https://id.rijksmuseum.nl/20310001' }],
+        shows: [{ id: 'https://id.rijksmuseum.nl/800001' }],
       });
     }
 
-    if (value.includes('20310001?_profile=la-framed')) {
-      return response({ digitally_shown_by: [{ id: 'https://id.rijksmuseum.nl/510001' }] });
+    if (value.includes('800001?_profile=la-framed')) {
+      return response({ digitally_shown_by: [{ id: 'https://id.rijksmuseum.nl/700001' }] });
     }
 
-    if (value.includes('510001?_profile=la-framed')) {
+    if (value.includes('700001?_profile=la-framed')) {
       return response({ access_point: [{ id: 'https://iiif.micr.io/IMG1/full/max/0/default.jpg' }] });
     }
 
-    if (value.includes('310002?_profile=la-framed')) {
+    if (value.includes('900002?_profile=la-framed')) {
       return response({
         identified_by: [{ type: 'Identifier', content: 'SK-A-2', classified_as: [{ id: 'https://id.rijksmuseum.nl/22015218' }] }],
         produced_by: { part: [{ carried_out_by: [{ notation: [{ '@language': 'en', '@value': 'Artist Two' }] }] }] },
-        shows: [{ id: 'https://id.rijksmuseum.nl/20310002' }],
+        shows: [{ id: 'https://id.rijksmuseum.nl/800002' }],
       });
     }
 
-    if (value.includes('20310002?_profile=la-framed')) {
-      return response({ digitally_shown_by: [{ id: 'https://id.rijksmuseum.nl/510002' }] });
+    if (value.includes('800002?_profile=la-framed')) {
+      return response({ digitally_shown_by: [{ id: 'https://id.rijksmuseum.nl/700002' }] });
     }
 
-    if (value.includes('510002?_profile=la-framed')) {
+    if (value.includes('700002?_profile=la-framed')) {
       return response({ access_point: [{ id: 'https://iiif.micr.io/IMG2/full/max/0/default.jpg' }] });
     }
 
