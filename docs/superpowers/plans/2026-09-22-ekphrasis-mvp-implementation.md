@@ -27,8 +27,8 @@
 - No raw AI score, crosshairs, bounding boxes, scanlines, grids, fake measurements, glitch/HUD styling, or “AI detected” badge.
 - Baseline upload limit is 10 MB plus decoded pixel/dimension protection.
 - Provider credentials are server-side only.
-- `API_UNAVAILABLE` is not cached as a normal identification result; degraded results use a shorter TTL than normal results.
-- `POST /api/identify` is rate-limited before pipeline execution and returns HTTP 429 when rejected.
+- `MATCH` and non-degraded `NO_MATCH` results use a 7-day TTL; degraded `MATCH`/`NO_MATCH` results use a 15-minute TTL; `API_UNAVAILABLE` is never cached as a normal identification result.
+- `POST /api/identify` uses an Upstash sliding-window limiter of 5 requests/minute and 30 requests/hour per privacy-preserving identity key, and returns HTTP 429 before pipeline execution when rejected.
 - Qdrant index maintenance is offline/batch work and the runtime records the index version used.
 - Smarthistory is future-only; no scraping or access-control bypass.
 
@@ -198,7 +198,7 @@ The implementation starts from the current fixture-driven GitHub Pages dashboard
 
 - [ ] **Step 1: Write tests using an in-memory fake cache for hit/miss, expiry class, `NO_MATCH`, and `API_UNAVAILABLE`.**
 - [ ] **Step 2: Run cache tests and confirm the abstraction is absent.**
-- [ ] **Step 3: Implement the cache policy and provider-neutral interface.**
+- [ ] **Step 3: Implement the cache policy with 7-day TTL for normal `MATCH`/`NO_MATCH` results, 15-minute TTL for degraded results, and no write for `API_UNAVAILABLE`.**
 - [ ] **Step 4: Implement the Upstash Redis adapter with native TTLs and JSON serialization of `IdentificationResult`.**
 - [ ] **Step 5: Verify the cache key is computed from original upload bytes before normalization.**
 - [ ] **Step 6: Run cache tests and commit `feat: add result cache`.**
@@ -220,7 +220,7 @@ The implementation starts from the current fixture-driven GitHub Pages dashboard
 - [ ] **Step 1: Write failing tests for allowed requests, threshold rejection, retry metadata, and missing/unstable identity fallback.**
 - [ ] **Step 2: Run tests and confirm the rate-limit implementation is absent.**
 - [ ] **Step 3: Implement the provider-neutral limiter contract.**
-- [ ] **Step 4: Implement the Upstash-backed limiter with the exact algorithm/window/threshold selected during execution from deployment constraints, keeping those values configuration rather than hard-coded business logic.**
+- [ ] **Step 4: Implement the Upstash-backed sliding-window limiter at 5 requests/minute and 30 requests/hour per identity; derive the identity from the first trusted client address in Vercel forwarding headers and HMAC it with a server-only salt before using it as the Redis key.**
 - [ ] **Step 5: Test that rejected requests never invoke the recognition pipeline.**
 - [ ] **Step 6: Run tests and commit `feat: add request rate limiting`.**
 
