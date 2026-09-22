@@ -4,7 +4,7 @@ Date: 2026-09-22
 
 Applied to `feature/github-pages-dashboard`.
 
-- Removed current project-facing Shazam references.
+- Removed the third-party brand reference from current project-facing materials.
 - Added sourced style fallback semantics: museum style first, then Wikipedia/Wikidata, otherwise null.
 - Added `styleSource` to the fixture and made the result UI show the source.
 - The demo now displays `Post-Impressionism` as Wikipedia-sourced metadata.
