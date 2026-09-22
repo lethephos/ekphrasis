@@ -19,3 +19,12 @@ test('request byte reader cancels a stream that crosses the upload ceiling', asy
   await assert.rejects(() => readRequestBytes(request, 6), /UPLOAD_TOO_LARGE/);
   assert.equal(cancelled, true);
 });
+
+
+test('health endpoint contract is a no-store JSON response', async () => {
+  const { GET } = await import('../../app/api/health/route.ts');
+  const response = await GET();
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('cache-control'), 'no-store');
+  assert.deepEqual(await response.json(), { status: 'ok', service: 'ekphrasis', version: 'unknown' });
+});
