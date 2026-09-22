@@ -7,6 +7,19 @@ export class MetAdapter implements MuseumAdapter {
   name = "The Metropolitan Museum of Art";
   constructor(private readonly fetcher: Fetcher = fetch) {}
 
+  async getById(id: string): Promise<ArtworkCandidate | null> {
+    const record = await requestJson<Record<string, unknown>>(
+      this.fetcher,
+      `https://collectionapi.metmuseum.org/public/collection/v1/objects/${encodeURIComponent(id)}`,
+      this.id
+    );
+    return {
+      source: { id: this.id, name: this.name, image_url: stringOrNull(record.primaryImage), url: stringOrNull(record.objectURL) },
+      artwork: { title: stringOrNull(record.title), artist: stringOrNull(record.artistDisplayName), year: stringOrNull(record.objectDate), medium: stringOrNull(record.medium), style: null },
+      evidence: emptyEvidence()
+    };
+  }
+
   async search(query: string): Promise<ArtworkCandidate[]> {
     const search = await requestJson<{ objectIDs?: number[] }>(
       this.fetcher,
