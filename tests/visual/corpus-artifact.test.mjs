@@ -36,3 +36,15 @@ test('corpus artifact refuses an unsafe object id', async () => {
     /UNSAFE_CORPUS_PATH/,
   );
 });
+
+
+test('corpus artifact downloader fetches source image bytes and records sha256 provenance', async () => {
+  const { downloadCorpusArtifacts } = await import('../../lib/visual/corpus-artifact.js');
+  const result = await downloadCorpusArtifacts({
+    records: [{ institution: 'The Met', objectId: '1', imageUrl: 'https://images.example/1.jpg', artworkUrl: 'https://example/1' }],
+    fetchImpl: async () => ({ ok: true, headers: { get: (name) => name === 'content-type' ? 'image/jpeg' : null }, arrayBuffer: async () => new Uint8Array([1, 2, 3]).buffer }),
+  });
+  assert.equal(result.length, 1);
+  assert.equal(result[0].contentType, 'image/jpeg');
+  assert.equal(result[0].sha256, '039058c6f2c0cb492c533b0a4a3a3e3e8b2f5b8a8e3f5b7d0b1f4b5b7e4f0d4');
+});
