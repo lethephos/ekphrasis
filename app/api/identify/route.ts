@@ -59,5 +59,9 @@ export async function POST(request: Request) {
     }
   );
 
-  return NextResponse.json(result, { status: result.state === "ERROR" ? 503 : 200 });
+  const status =
+    result.state !== "ERROR" ? 200 :
+    result.error === "INVALID_IMAGE" || result.error === "UNSUPPORTED_INPUT" ? 400 :
+    result.error === "API_UNAVAILABLE" || result.error === "PROCESSING_FAILED" ? 503 : 500;
+  return NextResponse.json(result, { status });
 }
