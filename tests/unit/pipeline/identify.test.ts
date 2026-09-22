@@ -44,13 +44,13 @@ describe("identification pipeline", () => {
         limiter: { check: async () => ({ allowed: true }) },
         validate: async () => ({ bytes: Buffer.from("image"), format: "jpeg", width: 1, height: 1 }),
         normalize: async upload => ({ bytes: upload.bytes }),
-        vision: { detect: async () => ({ webDetection: { webEntities: [{ description: "Example" }] } }) },
+        vision: { detect: async () => ({ webDetection: { webEntities: [{ description: "Example" }, { description: "Artist" }] } }) },
         museums: [{
           id: "met",
           name: "The Met",
           search: async () => [{
             source: { id: "met", name: "The Met", image_url: null, url: null },
-            artwork: { title: "Example", artist: null, year: null, medium: null, style: null },
+            artwork: { title: "Example", artist: "Artist", year: null, medium: null, style: null },
             evidence: { vision_text_match: "UNAVAILABLE", artist_match: "UNAVAILABLE", title_match: "UNAVAILABLE", date_match: "UNAVAILABLE", medium_match: "UNAVAILABLE", image_similarity: "UNAVAILABLE" }
           }]
         }]
