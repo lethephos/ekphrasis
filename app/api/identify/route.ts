@@ -21,18 +21,23 @@ export async function POST(request: Request) {
 
   const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
   const identity = await createRequestIdentity(forwarded, process.env.RATE_LIMIT_HMAC_SECRET ?? "development-only-secret");
+  const rate = await limiter.check(identity);
+  if (!rate.allowed) {
+    return NextResponse.json(
+      { state: "ERROR", error: "PROCESSING_FAILED" },
+      { status: 429, headers: { "Retry-After": String(rate.retryAfterSeconds ?? 60) } }
+    );
+  }
+
   const result = await identifyImage(
     { file, address: identity },
     {
       cache: new UpstashResultCache(),
-      limiter,
+      limiter: { check: async () => ({ allowed: true }) },
       vision: new GoogleVisionAdapter(),
       museums: [new MetAdapter(), new RijksmuseumAdapter(), new ArticAdapter(), new SmithsonianAdapter()]
     }
   );
 
-  if (result.state === "ERROR" && result.error === "PROCESSING_FAILED") {
-    return NextResponse.json(result, { status: 429 });
-  }
   return NextResponse.json(result, { status: result.state === "ERROR" ? 503 : 200 });
 }
