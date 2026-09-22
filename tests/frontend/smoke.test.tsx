@@ -13,6 +13,6 @@ describe("Ekphrasis upload surface", () => {
     render(<Home />);
     const input = document.querySelector('input[type="file"]');
     expect(input).toBeTruthy();
-    expect(input).not.toHaveAttribute("capture");
+    expect(input?.getAttribute("capture")).toBeNull();
   });
 });
