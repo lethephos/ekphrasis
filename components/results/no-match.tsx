@@ -1,0 +1,1 @@
+export function NoMatch() { return <section className="state-card"><p className="eyebrow">NO MATCH</p><h2>No confident identification.</h2><p>Try a clearer photograph with the artwork filling more of the frame.</p></section>; }
