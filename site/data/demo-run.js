@@ -25,7 +25,7 @@ export const demoRun = {
       evidence: [
         ["artist_match", "MATCH"],
         ["title_match", "MATCH"],
-        ["year_match", "UNAVAILABLE"],
+        ["year_match", "MATCH"],
         ["medium_match", "MATCH"],
       ],
       score: 0.96,
