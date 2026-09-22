@@ -124,6 +124,7 @@ export const demoRun = {
       objectId: "436535",
       artworkUrl: "https://www.metmuseum.org/art/collection/search/436535",
       imageUrl: "https://images.metmuseum.org/CRDImages/ep/original/DT1567.jpg",
+      previewImageUrl: "https://upload.wikimedia.org/wikipedia/commons/0/0b/Wheat_Field_with_Cypresses_MET_DT1567.jpg",
       license: { status: "unknown", details: "Demo fixture · verify rights at source." },
     },
     relatedReading: [
