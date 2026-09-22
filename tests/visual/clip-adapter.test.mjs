@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createClipEmbedder } from '../../lib/visual/clip-adapter.js';
+import { createClipEmbedder, createProductionClipEmbedder } from '../../lib/visual/clip-adapter.js';
 
 test('CLIP adapter converts image bytes into a normalized embedding', async () => {
   const embedder = createClipEmbedder({
