@@ -26,42 +26,46 @@ export async function POST(request: Request) {
     return NextResponse.json({ state: "ERROR", error: "PROCESSING_FAILED" }, { status: 503 });
   }
 
-  const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  const identity = await createRequestIdentity(forwarded, secret);
-  const rate = await limiter.check(identity);
-  if (!rate.allowed) {
-    return NextResponse.json(
-      { state: "ERROR", error: "PROCESSING_FAILED" },
-      { status: 429, headers: { "Retry-After": String(rate.retryAfterSeconds ?? 60) } }
-    );
-  }
-
-  const clipConfigured = Boolean(
-    process.env.CLIP_EMBEDDING_URL &&
-    process.env.QDRANT_URL &&
-    process.env.QDRANT_API_KEY
-  );
-
-  const result = await identifyImage(
-    { file, address: identity },
-    {
-      cache: new UpstashResultCache(),
-      limiter: { check: async () => ({ allowed: true }) },
-      vision: new GoogleVisionAdapter(),
-      museums: [new MetAdapter(), new RijksmuseumAdapter(), new ArticAdapter(), new SmithsonianAdapter()],
-      clip: clipConfigured
-        ? {
-            encoder: new HttpClipEncoder(),
-            qdrant: new QdrantRuntimeAdapter(),
-            index: clipIndex
-          }
-        : undefined
+  try {
+    const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+    const identity = await createRequestIdentity(forwarded, secret);
+    const rate = await limiter.check(identity);
+    if (!rate.allowed) {
+      return NextResponse.json(
+        { state: "ERROR", error: "PROCESSING_FAILED" },
+        { status: 429, headers: { "Retry-After": String(rate.retryAfterSeconds ?? 60) } }
+      );
     }
-  );
 
-  const status =
-    result.state !== "ERROR" ? 200 :
-    result.error === "INVALID_IMAGE" || result.error === "UNSUPPORTED_INPUT" ? 400 :
-    result.error === "API_UNAVAILABLE" || result.error === "PROCESSING_FAILED" ? 503 : 500;
-  return NextResponse.json(result, { status });
+    const clipConfigured = Boolean(
+      process.env.CLIP_EMBEDDING_URL &&
+      process.env.QDRANT_URL &&
+      process.env.QDRANT_API_KEY
+    );
+
+    const result = await identifyImage(
+      { file, address: identity },
+      {
+        cache: new UpstashResultCache(),
+        limiter: { check: async () => ({ allowed: true }) },
+        vision: new GoogleVisionAdapter(),
+        museums: [new MetAdapter(), new RijksmuseumAdapter(), new ArticAdapter(), new SmithsonianAdapter()],
+        clip: clipConfigured
+          ? {
+              encoder: new HttpClipEncoder(),
+              qdrant: new QdrantRuntimeAdapter(),
+              index: clipIndex
+            }
+          : undefined
+      }
+    );
+
+    const status =
+      result.state !== "ERROR" ? 200 :
+      result.error === "INVALID_IMAGE" || result.error === "UNSUPPORTED_INPUT" ? 400 :
+      result.error === "API_UNAVAILABLE" || result.error === "PROCESSING_FAILED" ? 503 : 500;
+    return NextResponse.json(result, { status });
+  } catch {
+    return NextResponse.json({ state: "ERROR", error: "API_UNAVAILABLE" }, { status: 503 });
+  }
 }
