@@ -4,6 +4,7 @@ export const runtime = "nodejs";
 import { identifyImage } from "../../../lib/pipeline/identify";
 import { UpstashResultCache } from "../../../lib/cache/upstash";
 import { MemoryResultCache, ResilientResultCache } from "../../../lib/cache/runtime";
+import type { ResultCache } from "../../../lib/cache/cache";
 import { SlidingWindowRateLimiter, createRequestIdentity } from "../../../lib/rate-limit/rate-limit";
 import { UpstashRateLimitStore } from "../../../lib/rate-limit/upstash";
 import { getRateLimitSecret } from "../../../lib/rate-limit/secret";
@@ -68,9 +69,9 @@ export async function POST(request: Request) {
       );
     }
 
-    let cache = memoryCache;
+    let cache: ResultCache = memoryCache;
     try {
-      cache = new ResilientResultCache(new UpstashResultCache(), memoryCache) as MemoryResultCache;
+      cache = new ResilientResultCache(new UpstashResultCache(), memoryCache);
     } catch {
       cache = memoryCache;
     }
