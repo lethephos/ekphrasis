@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateUpload } from "../../lib/image/validate";
+import { validateUpload } from "../../../lib/image/validate";
 
 function file(bytes: number[], name = "image.jpg", type = "image/jpeg") {
   return new File([new Uint8Array(bytes)], name, { type });
