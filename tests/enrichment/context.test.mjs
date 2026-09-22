@@ -33,3 +33,12 @@ test('Wikipedia client resolves an exact article summary by title', async () => 
   });
   assert.deepEqual(await client.lookup({ title: 'Wheat Field' }), { title: 'Wheat Field', extract: 'Summary', url: 'https://en.wikipedia.org/wiki/Wheat_Field' });
 });
+
+
+test('Wikidata client returns only explicitly supplied detail evidence', async () => {
+  const { createWikidataClient } = await import('../../lib/enrichment/wikidata.js');
+  const client = createWikidataClient({
+    lookup: async () => ({ detail: 'Explicit fact.' }),
+  });
+  assert.deepEqual(await client.lookup({ title: 'Work', artist: 'Artist' }), { detail: 'Explicit fact.' });
+});
