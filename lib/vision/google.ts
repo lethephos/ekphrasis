@@ -6,11 +6,24 @@ export interface VisionAdapter {
   detect(image: Buffer): Promise<VisionDetection>;
 }
 
+function googleClient(): vision.ImageAnnotatorClient {
+  const raw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+  if (!raw) return new vision.ImageAnnotatorClient();
+
+  try {
+    const credentials = JSON.parse(raw) as { client_email?: string; private_key?: string };
+    if (!credentials.client_email || !credentials.private_key) throw new Error("missing credentials");
+    return new vision.ImageAnnotatorClient({ credentials });
+  } catch {
+    throw new ProviderError("vision", "AUTH", "Vision credentials are invalid.");
+  }
+}
+
 export class GoogleVisionAdapter implements VisionAdapter {
   private readonly client: vision.ImageAnnotatorClient;
 
-  constructor(client = new vision.ImageAnnotatorClient()) {
-    this.client = client;
+  constructor(client?: vision.ImageAnnotatorClient) {
+    this.client = client ?? googleClient();
   }
 
   async detect(image: Buffer): Promise<VisionDetection> {
