@@ -43,7 +43,7 @@ describe("identification pipeline", () => {
         },
         limiter: { check: async () => ({ allowed: true }) },
         validate: async () => ({ bytes: Buffer.from("image"), format: "jpeg", width: 1, height: 1 }),
-        normalize: async upload => ({ bytes: upload.bytes }),
+        normalize: async upload => ({ bytes: upload.bytes, mimeType: "image/jpeg", width: 1, height: 1 }),
         vision: { detect: async () => ({ webDetection: { webEntities: [{ description: "Example" }, { description: "Artist" }] } }) },
         museums: [{
           id: "met",
