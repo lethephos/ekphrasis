@@ -10,3 +10,6 @@ jobs:
       - uses: actions/checkout@v4
       - run: node --check site/app.js
       - run: node --check site/data/demo-run.js
+      - run: '! grep -Rni --exclude-dir=.git shazam README.md site docs'
+      - run: grep -q 'style: "Post-Impressionism"' site/data/demo-run.js
+      - run: grep -q 'styleSource: "wikipedia"' site/data/demo-run.js
