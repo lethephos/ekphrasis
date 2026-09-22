@@ -71,3 +71,27 @@ test('identify pipeline marks a match as degraded when a museum provider failed'
   const result = await pipeline.identify(new Uint8Array([1]), { clientKey: 'ip' });
   assert.equal(result.diagnostics.degraded, true);
 });
+
+
+test('identify pipeline can use visual fallback when metadata search yields no candidates', async () => {
+  let visualCalled = false;
+  const pipeline = createIdentifyPipeline({
+    validate: async () => ({ format: 'jpeg', byteLength: 1 }),
+    hash: async () => 'visual-only',
+    cache: { get: async () => null, set: async () => {} },
+    rateLimiter: { check: async () => ({ allowed: true, remaining: 9 }) },
+    normalize: async (bytes) => ({ bytes }),
+    vision: { detect: async () => ({ signals: [{ value: 'Unknown title', type: 'title' }] }) },
+    museums: [{ search: async () => [] }],
+    score: (query, candidate) => ({ candidate, evidence: { title_match: 'UNAVAILABLE' }, score: 0 }),
+    selectCanonical: () => null,
+    gate: () => ({ status: 'no_match', confidence: 'low', useVisualFallback: true }),
+    visual: { resolve: async (_bytes, decision) => {
+      visualCalled = decision.useVisualFallback === true;
+      return { candidate: { institution: 'The Met', objectId: '1', title: 'Recovered', artist: 'Artist', year: '1900', medium: 'Oil', imageUrl: 'https://img', artworkUrl: 'https://art', license: 'unknown' }, similarity: 0.9, degraded: false };
+    } },
+  });
+  const result = await pipeline.identify(new Uint8Array([1]), { clientKey: 'ip' });
+  assert.equal(visualCalled, true);
+  assert.equal(result.status, 'match');
+});
