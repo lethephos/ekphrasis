@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 import { identifyImage } from "../../../lib/pipeline/identify";
 import { UpstashResultCache } from "../../../lib/cache/upstash";
+import { MemoryResultCache, ResilientResultCache } from "../../../lib/cache/runtime";
+import type { ResultCache } from "../../../lib/cache/cache";
 import { SlidingWindowRateLimiter, createRequestIdentity } from "../../../lib/rate-limit/rate-limit";
 import { UpstashRateLimitStore } from "../../../lib/rate-limit/upstash";
 import { getRateLimitSecret } from "../../../lib/rate-limit/secret";
@@ -16,6 +18,10 @@ import { QdrantRuntimeAdapter } from "../../../lib/clip/qdrant";
 import clipIndex from "../../../data/clip/index-version.json";
 import type { ClipCandidateRef } from "../../../lib/clip/types";
 import type { ArtworkCandidate } from "../../../lib/types";
+
+const memoryRateLimitStore = new Map<string, number[]>();
+const memoryRateLimiter = new SlidingWindowRateLimiter(memoryRateLimitStore);
+const memoryCache = new MemoryResultCache();
 
 async function hydrateClipCandidates(refs: ClipCandidateRef[], museums: Array<MetAdapter | RijksmuseumAdapter | ArticAdapter | SmithsonianAdapter>): Promise<ArtworkCandidate[]> {
   const bySource = new Map(museums.map(museum => [museum.id, museum]));
@@ -42,15 +48,32 @@ export async function POST(request: Request) {
   }
 
   try {
-    const limiter = new SlidingWindowRateLimiter(new UpstashRateLimitStore());
+    let limiter: SlidingWindowRateLimiter;
+    try {
+      limiter = new SlidingWindowRateLimiter(new UpstashRateLimitStore());
+    } catch {
+      limiter = memoryRateLimiter;
+    }
     const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
     const identity = await createRequestIdentity(forwarded, secret);
-    const rate = await limiter.check(identity);
+    let rate;
+    try {
+      rate = await limiter.check(identity);
+    } catch {
+      rate = await memoryRateLimiter.check(identity);
+    }
     if (!rate.allowed) {
       return NextResponse.json(
         { state: "ERROR", error: "PROCESSING_FAILED" },
         { status: 429, headers: { "Retry-After": String(rate.retryAfterSeconds ?? 60) } }
       );
+    }
+
+    let cache: ResultCache = memoryCache;
+    try {
+      cache = new ResilientResultCache(new UpstashResultCache(), memoryCache);
+    } catch {
+      cache = memoryCache;
     }
 
     const clipConfigured = Boolean(
@@ -63,7 +86,7 @@ export async function POST(request: Request) {
     const result = await identifyImage(
       { file: file as File, address: identity },
       {
-        cache: new UpstashResultCache(),
+        cache,
         limiter: { check: async () => ({ allowed: true }) },
         vision: new HuggingFaceVisionAdapter(),
         museums,
