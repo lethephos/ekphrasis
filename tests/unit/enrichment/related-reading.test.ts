@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractRelatedReading } from "../../lib/enrichment/related-reading";
+import { extractRelatedReading } from "../../../lib/enrichment/related-reading";
 
 describe("related reading", () => {
   it("returns at most three qualifying external links", () => {
