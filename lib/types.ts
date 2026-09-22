@@ -44,6 +44,7 @@ export type IdentificationResult =
       source: ArtworkCandidate["source"];
       context: string | null;
       detail: string | null;
+      related_reading: Array<{ title: string; url: string }>;
       degraded: boolean;
       unavailable_sources: string[];
     }
