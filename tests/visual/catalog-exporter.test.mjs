@@ -20,3 +20,19 @@ test('catalog exporter paginates and rejects records without source images', asy
   const records = await exporter.exportMet({ limit: 2 });
   assert.deepEqual(records, []);
 });
+
+
+test('catalog exporter retries transient provider responses with bounded backoff', async () => {
+  let attempts = 0;
+  const exporter = createCatalogExporter({
+    fetchImpl: async () => {
+      attempts += 1;
+      if (attempts < 3) return { ok: false, status: 503, json: async () => ({}) };
+      return { ok: true, json: async () => ({ objectIDs: [] }) };
+    },
+    retryAttempts: 3,
+    retryDelayMs: 0,
+  });
+  await exporter.exportMet({ limit: 1 });
+  assert.equal(attempts, 3);
+});
