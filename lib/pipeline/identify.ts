@@ -4,7 +4,7 @@ import { sha256 } from "../cache/cache";
 import { validateUpload, type ValidatedUpload } from "../image/validate";
 import { normalizeImage, type NormalizedImage } from "../image/normalize";
 import { extractSearchCandidates } from "../candidates/extract";
-import type { VisionAdapter } from "../vision/google";
+import type { VisionAdapter } from "../vision/huggingface";
 import type { MuseumAdapter } from "../museums/types";
 import { searchMuseums } from "../museums/search";
 import { equivalentDate, equivalentText } from "../matching/normalize";
