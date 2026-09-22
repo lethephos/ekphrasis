@@ -64,7 +64,7 @@ test('promotes by atomically switching an existing alias', async () => {
     client: {
       async count() { return { count: 4 }; },
       async getCollection() { return { config: { params: { vectors: { size: 512 } } } }; },
-      async setAlias(alias, collection) { calls.push(['alias', alias, collection]); },
+      async switchAlias(alias, collection) { calls.push(['alias', alias, collection]); },
     },
     requiredSources: ['The Met', 'Rijksmuseum', 'AIC', 'Smithsonian'],
     alias: 'ekphrasis-clip-current',
