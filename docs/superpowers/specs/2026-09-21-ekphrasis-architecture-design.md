@@ -522,7 +522,7 @@ The optional external droplet may be used for batch embedding generation/mainten
 
 Smarthistory is explicitly future-only. It is not a current enrichment dependency and does not participate in identification. Any future integration requires confirmed programmatic-access permissions and reliable artwork-level linking. No scraping or access-restriction bypass is permitted.
 
-## 13. Hosting and deployment
+## 14. Hosting and deployment
 
 ```
 Vercel
@@ -539,7 +539,7 @@ The existing external droplet is an optional auxiliary compute escape hatch for 
 
 Railway is excluded from the architecture.
 
-## 14. Repository structure
+## 15. Repository structure
 
 ```
 ekphrasis/
@@ -579,7 +579,7 @@ Repository rules:
 - never commit `.env` or API keys;
 - `.env.example` contains placeholders only.
 
-## 15. Product scope boundaries
+## 16. Product scope boundaries
 
 MVP excludes:
 - authentication;
