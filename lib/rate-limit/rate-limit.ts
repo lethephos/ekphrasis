@@ -4,7 +4,7 @@ export type RateLimitDecision = { allowed: boolean; retryAfterSeconds?: number }
 export type RateLimitStore = Map<string, number[]> | {
   add(key: string, timestamp: number): Promise<void>;
   prune(key: string, before: number): Promise<void>;
-  count(key: string): Promise<number>;
+  countSince(key: string, since: number): Promise<number>;
 };
 
 export async function createRequestIdentity(address: string, secret: string): Promise<string> {
@@ -26,17 +26,15 @@ export class SlidingWindowRateLimiter {
       const values = this.store.get(identity) ?? [];
       const recent = values.filter(timestamp => timestamp > now - hour);
       const minuteCount = recent.filter(timestamp => timestamp > now - minute).length;
-      if (minuteCount >= 5 || recent.length >= 30) {
-        return { allowed: false, retryAfterSeconds: 60 };
-      }
+      if (minuteCount >= 5 || recent.length >= 30) return { allowed: false, retryAfterSeconds: 60 };
       recent.push(now);
       this.store.set(identity, recent);
       return { allowed: true };
     }
 
     await this.store.prune(identity, now - hour);
-    const count = await this.store.count(identity);
-    if (count >= 30) return { allowed: false, retryAfterSeconds: 60 };
+    if (await this.store.countSince(identity, now - minute) >= 5) return { allowed: false, retryAfterSeconds: 60 };
+    if (await this.store.countSince(identity, now - hour) >= 30) return { allowed: false, retryAfterSeconds: 60 };
     await this.store.add(identity, now);
     return { allowed: true };
   }
