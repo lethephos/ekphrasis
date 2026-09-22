@@ -13,12 +13,12 @@ The runtime Qdrant path is read-only. Corpus generation is an offline batch work
 
 ## Offline flow
 
-1. Export normalized catalog records with `scripts/qdrant/export-catalog.mjs`.
-2. Download only museum-provided source images.
-3. Generate embeddings with the pinned CLIP model.
-4. Batch-upsert into a new versioned Qdrant collection.
-5. Run `scripts/qdrant/validate-index.mjs` against the snapshot/manifest.
-6. Promote the validated collection by changing the configured active collection/version.
+1. Export normalized catalog records with `scripts/qdrant/export-catalog.mjs` or run the end-to-end offline builder `scripts/qdrant/build-index.mjs`.
+2. Download only museum-provided source images; bytes are SHA-256 hashed before persistence.
+3. Generate embeddings with the pinned Transformers.js CLIP model.
+4. Batch-upsert into a new date-versioned Qdrant collection.
+5. Validate point count, payload completeness, dimensions, source coverage, and the smoke-query set before promotion.
+6. Promote only after validation by atomically switching the configured active alias.
 
 A batch worker may run locally or on an external droplet. It is never a request-time dependency.
 
