@@ -1,6 +1,6 @@
 import type { ArtworkCandidate } from "../types";
 import type { Fetcher, MuseumAdapter } from "./types";
-import { ProviderError } from "../errors";
+import { requestJson } from "./request";
 
 export class ArticAdapter implements MuseumAdapter {
   id = "aic";
@@ -9,9 +9,7 @@ export class ArticAdapter implements MuseumAdapter {
 
   async search(query: string): Promise<ArtworkCandidate[]> {
     const url = `https://api.artic.edu/api/v1/artworks/search?q=${encodeURIComponent(query)}&limit=5&fields=id,title,date_display,artist_display,medium_display,style_title,image_id`;
-    const response = await this.fetcher(url);
-    if (!response.ok) throw new ProviderError(this.id, response.status === 429 ? "RATE_LIMITED" : "PROVIDER_ERROR", "Art Institute request failed.");
-    const json = await response.json() as { data?: Array<Record<string, unknown>> };
+    const json = await requestJson<{ data?: Array<Record<string, unknown>> }>(this.fetcher, url, this.id);
     return (json.data ?? []).map(record => {
       const imageId = typeof record.image_id === "string" ? record.image_id : null;
       return {
