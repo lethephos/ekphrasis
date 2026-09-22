@@ -1,4 +1,4 @@
-import { demoRun } from "./data/demo-run.js";
+import { demoRun } from "./data/demo-run.js?v=source-coverage-2";
 
 const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({
   "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
