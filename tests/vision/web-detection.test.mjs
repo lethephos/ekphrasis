@@ -15,11 +15,12 @@ test('normalizes web detection pages and entities into museum search candidates'
   assert.deepEqual(result, {
     queries: ['Wheat Field with Cypresses', 'Vincent van Gogh'],
     references: [{ url: 'https://example.org/wheat-field', title: 'Wheat Field with Cypresses' }],
+    signals: [{ value: 'Wheat Field with Cypresses', type: 'title' }, { value: 'Vincent van Gogh', type: 'artist' }],
   });
 });
 
 test('returns an empty candidate set when Vision has no useful evidence', () => {
-  assert.deepEqual(normalizeWebDetection({ webDetection: {} }), { queries: [], references: [] });
+  assert.deepEqual(normalizeWebDetection({ webDetection: {} }), { queries: [], references: [], signals: [] });
 });
 
 test('classifies malformed Vision responses', () => {
