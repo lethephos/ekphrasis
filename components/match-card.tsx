@@ -9,7 +9,7 @@ export function MatchCard({ result }: { result: Extract<IdentificationResult, { 
       <p><span>Year</span> · {result.artwork.year ?? "Date unknown"}</p>
       <p><span>Medium</span> · {result.artwork.medium ?? "Medium unavailable"}</p>
       {result.artwork.style ? <p><span>Style</span> · {result.artwork.style}</p> : null}
-      <p aria-label="Confidence">Confidence · {result.confidence}</p>
+      <p className="confidence-indicator" aria-label="Confidence">Confidence · {result.confidence}</p>
       {result.context ? <p>{result.context}</p> : null}
       {result.detail ? <p>{result.detail}</p> : null}
       {result.related_reading.length ? (
