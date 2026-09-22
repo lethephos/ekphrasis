@@ -1,7 +1,26 @@
 import { describe, expect, it } from "vitest";
-import { identifyImage } from "../../../lib/pipeline/identify";
+import { evidenceCandidates, identifyImage } from "../../../lib/pipeline/identify";
 
 describe("identification pipeline", () => {
+  it("maps independent Vision text candidates to title and artist evidence without false negatives", () => {
+    const [candidate] = evidenceCandidates([{
+      source: { id: "met", name: "The Met", image_url: null, url: null },
+      artwork: { title: "The Starry Night", artist: "Vincent van Gogh", year: "1889", medium: "Oil on canvas", style: null },
+      evidence: {
+        vision_text_match: "UNAVAILABLE",
+        artist_match: "UNAVAILABLE",
+        title_match: "UNAVAILABLE",
+        date_match: "UNAVAILABLE",
+        medium_match: "UNAVAILABLE",
+        image_similarity: "UNAVAILABLE"
+      }
+    }], ["The Starry Night", "Vincent van Gogh"]);
+    expect(candidate.evidence.title_match).toBe("MATCH");
+    expect(candidate.evidence.artist_match).toBe("MATCH");
+    expect(candidate.evidence.date_match).toBe("UNAVAILABLE");
+    expect(candidate.evidence.medium_match).toBe("UNAVAILABLE");
+  });
+
   it("returns a cached result without invoking providers", async () => {
     const cached = { state: "NO_MATCH", reason: "insufficient_evidence", degraded: false, unavailable_sources: [] } as const;
     const result = await identifyImage(
