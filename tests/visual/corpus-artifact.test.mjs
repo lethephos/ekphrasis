@@ -46,5 +46,5 @@ test('corpus artifact downloader fetches source image bytes and records sha256 p
   });
   assert.equal(result.length, 1);
   assert.equal(result[0].contentType, 'image/jpeg');
-  assert.equal(result[0].sha256, '039058c6f2c0cb492c533b0a4a3a3e3e8b2f5b8a8e3f5b7d0b1f4b5b7e4f0d4');
+  assert.equal(result[0].sha256, '039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81');
 });
