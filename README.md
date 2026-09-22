@@ -1,10 +1,10 @@
 # Ekphrasis
 
-Ekphrasis is a web service for identifying paintings from photographs — “Shazam for paintings.”
+Ekphrasis is a web service for identifying paintings from photographs.
 
 ## Architecture demo
 
-The static GitHub Pages dashboard visualizes the planned recognition pipeline, museum evidence, matching semantics, fallback path, provenance, and result presentation.
+The static GitHub Pages dashboard visualizes the planned recognition pipeline, museum evidence, matching semantics, sourced style enrichment, fallback path, provenance, and result presentation.
 
 **Dashboard:** https://lethephos.github.io/ekphrasis/
 
