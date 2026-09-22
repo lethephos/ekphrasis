@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createRequestIdentity, type RateLimitStore, SlidingWindowRateLimiter } from "../../lib/rate-limit/rate-limit";
+import { createRequestIdentity, type RateLimitStore, SlidingWindowRateLimiter } from "../../../lib/rate-limit/rate-limit";
 
 describe("request rate limiting", () => {
   it("creates a privacy-preserving identity from the trusted client address", async () => {
