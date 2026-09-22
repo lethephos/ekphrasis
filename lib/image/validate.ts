@@ -5,7 +5,7 @@ const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 const MAX_PIXELS = 40_000_000;
 const SUPPORTED = new Set(["jpeg", "png", "webp", "heic", "heif"]);
 
-type ValidatedUpload = {
+export type ValidatedUpload = {
   bytes: Buffer;
   format: "jpeg" | "png" | "webp" | "heic" | "heif";
   width: number;
