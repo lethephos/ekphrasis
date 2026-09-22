@@ -19,7 +19,7 @@ export class QdrantRuntimeAdapter implements QdrantAdapter {
       return result.flatMap(point => {
         const payload = point.payload as Record<string, unknown> | null;
         if (!payload || payload.index_version !== indexVersion || typeof payload.artwork_id !== "string") return [];
-        return [{ artworkId: payload.artwork_id, score: point.score }];
+        return [{ artworkId: payload.artwork_id, score: point.score, candidate: payload.candidate as ClipCandidateRef["candidate"] }];
       });
     } catch {
       throw new ProviderError("qdrant", "PROVIDER_ERROR", "Qdrant fallback search failed.");
