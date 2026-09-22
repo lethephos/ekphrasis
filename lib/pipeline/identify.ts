@@ -7,7 +7,7 @@ import { extractSearchCandidates } from "../candidates/extract";
 import type { VisionAdapter } from "../vision/google";
 import type { MuseumAdapter } from "../museums/types";
 import { searchMuseums } from "../museums/search";
-import { buildEvidence } from "../matching/evidence";
+import { equivalentDate, equivalentText } from "../matching/normalize";
 import { scoreCandidates } from "../matching/score";
 import { selectCanonicalCandidate } from "../matching/select";
 import type { ClipEncoder, ClipIndex, QdrantAdapter } from "../clip/types";
@@ -30,29 +30,26 @@ export interface IdentifyDeps {
   clip?: { encoder: ClipEncoder; qdrant: QdrantAdapter; index: ClipIndex };
 }
 
-function evidenceCandidates(candidates: ArtworkCandidate[], queries: string[]): ArtworkCandidate[] {
-  return candidates.map(candidate => {
-    const evidences = queries.map(query =>
-      buildEvidence(candidate.artwork, { title: query, artist: query, year: query, medium: query })
-    );
-    const best = (field: keyof ArtworkCandidate["evidence"]) =>
-      evidences.some(evidence => evidence[field] === "MATCH")
-        ? "MATCH" as const
-        : evidences.some(evidence => evidence[field] === "MISMATCH")
-          ? "MISMATCH" as const
-          : "UNAVAILABLE" as const;
-    return {
-      ...candidate,
-      evidence: {
-        vision_text_match: "UNAVAILABLE",
-        title_match: best("title_match"),
-        artist_match: best("artist_match"),
-        date_match: best("date_match"),
-        medium_match: best("medium_match"),
-        image_similarity: "UNAVAILABLE"
-      }
-    };
-  });
+function anyTextMatch(value: string | null, queries: string[]): boolean {
+  return Boolean(value && queries.some(query => equivalentText(value, query)));
+}
+
+function anyDateMatch(value: string | null, queries: string[]): boolean {
+  return Boolean(value && queries.some(query => /^\s*(?:c\.?\s*)?\d{4}\s*$/.test(query) && equivalentDate(value, query)));
+}
+
+export function evidenceCandidates(candidates: ArtworkCandidate[], queries: string[]): ArtworkCandidate[] {
+  return candidates.map(candidate => ({
+    ...candidate,
+    evidence: {
+      vision_text_match: "UNAVAILABLE",
+      title_match: anyTextMatch(candidate.artwork.title, queries) ? "MATCH" : "UNAVAILABLE",
+      artist_match: anyTextMatch(candidate.artwork.artist, queries) ? "MATCH" : "UNAVAILABLE",
+      date_match: anyDateMatch(candidate.artwork.year, queries) ? "MATCH" : "UNAVAILABLE",
+      medium_match: anyTextMatch(candidate.artwork.medium, queries) ? "MATCH" : "UNAVAILABLE",
+      image_similarity: "UNAVAILABLE"
+    }
+  }));
 }
 
 async function enrich(candidate: ArtworkCandidate): Promise<{ context: string | null; detail: string | null }> {
@@ -131,7 +128,6 @@ export async function identifyImage(request: IdentifyRequest, deps: IdentifyDeps
         : error instanceof ProviderError && error.provider === "vision"
           ? { state: "ERROR", error: "API_UNAVAILABLE" }
           : { state: "ERROR", error: "PROCESSING_FAILED" };
-    if (result.state !== "ERROR" || result.error !== "API_UNAVAILABLE") await deps.cache.set(hash, result);
     return result;
   }
 }
