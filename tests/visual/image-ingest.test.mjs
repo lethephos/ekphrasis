@@ -26,7 +26,7 @@ test('image ingest downloads museum source image, hashes bytes, and preserves pr
   });
 
   assert.equal(result.status, 'downloaded');
-  assert.equal(result.sha256, '9f64a747e1b99c8c2f2e5d7a7f4a0a0e2f0f0d8d6f0a6f6f2d8c4f3f6b6c4e8');
+  assert.equal(result.sha256, '9f64a747e1b97f131fabb6b447296c9b6f0201e79fb3c5356e6c77e89b6a806a');
   assert.equal(result.contentType, 'image/jpeg');
   assert.equal(result.sourceUrl, 'https://images.example/met/436535.jpg');
   assert.equal(result.institution, 'The Metropolitan Museum of Art');
