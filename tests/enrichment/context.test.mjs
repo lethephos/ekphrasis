@@ -24,3 +24,12 @@ test('context enricher returns null enrichment when linked sources are unavailab
   });
   assert.deepEqual(await enricher.enrich({ title: 'Unknown', artist: 'Unknown' }), { context: null, detail: null });
 });
+
+
+test('Wikipedia client resolves an exact article summary by title', async () => {
+  const { createWikipediaClient } = await import('../../lib/enrichment/wikipedia.js');
+  const client = createWikipediaClient({
+    fetchImpl: async () => ({ ok: true, json: async () => ({ title: 'Wheat Field', extract: 'Summary', content_urls: { desktop: { page: 'https://en.wikipedia.org/wiki/Wheat_Field' } } }) }),
+  });
+  assert.deepEqual(await client.lookup({ title: 'Wheat Field' }), { title: 'Wheat Field', extract: 'Summary', url: 'https://en.wikipedia.org/wiki/Wheat_Field' });
+});
