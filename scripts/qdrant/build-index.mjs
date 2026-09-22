@@ -5,6 +5,7 @@ import { downloadCorpusArtifacts } from '../../lib/visual/corpus-artifact.js';
 import { createProductionClipEmbedder } from '../../lib/visual/clip-adapter.js';
 import { createQdrantAdminClient } from '../../lib/visual/qdrant.js';
 import { createQdrantIndex } from '../../lib/visual/qdrant-index.js';
+import { createQdrantPromotion } from '../../lib/visual/qdrant-promotion.js';
 import { buildVisualIndex } from '../../lib/visual/index-builder.js';
 
 const exporter = createCatalogExporter();
@@ -32,5 +33,11 @@ const result = await buildVisualIndex({
   embed,
   index,
 });
-await fs.writeFile(process.env.QDRANT_BUILD_MANIFEST || 'data/qdrant/build-manifest.json', JSON.stringify(result, null, 2));
-console.log(JSON.stringify(result, null, 2));
+const promotion = createQdrantPromotion({
+  client: admin,
+  requiredSources: ['The Met', 'Rijksmuseum', 'Art Institute of Chicago', 'Smithsonian'],
+  alias: process.env.QDRANT_ALIAS || 'ekphrasis-clip-current',
+});
+await promotion.promote(result);
+await fs.writeFile(process.env.QDRANT_BUILD_MANIFEST || 'data/qdrant/build-manifest.json', JSON.stringify({ ...result, promoted: true }, null, 2));
+console.log(JSON.stringify({ ...result, promoted: true }, null, 2));
