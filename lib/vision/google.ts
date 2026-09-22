@@ -1,4 +1,4 @@
-import vision from "@google-cloud/vision";
+import { ImageAnnotatorClient } from "@google-cloud/vision";
 import type { VisionDetection } from "../candidates/extract";
 import { ProviderError } from "../errors";
 
@@ -6,23 +6,23 @@ export interface VisionAdapter {
   detect(image: Buffer): Promise<VisionDetection>;
 }
 
-function googleClient(): vision.ImageAnnotatorClient {
+function googleClient(): ImageAnnotatorClient {
   const raw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
-  if (!raw) return new vision.ImageAnnotatorClient();
+  if (!raw) return new ImageAnnotatorClient();
 
   try {
     const credentials = JSON.parse(raw) as { client_email?: string; private_key?: string };
     if (!credentials.client_email || !credentials.private_key) throw new Error("missing credentials");
-    return new vision.ImageAnnotatorClient({ credentials });
+    return new ImageAnnotatorClient({ credentials });
   } catch {
     throw new ProviderError("vision", "AUTH", "Vision credentials are invalid.");
   }
 }
 
 export class GoogleVisionAdapter implements VisionAdapter {
-  private readonly client: vision.ImageAnnotatorClient;
+  private readonly client: ImageAnnotatorClient;
 
-  constructor(client?: vision.ImageAnnotatorClient) {
+  constructor(client?: ImageAnnotatorClient) {
     this.client = client ?? googleClient();
   }
 
