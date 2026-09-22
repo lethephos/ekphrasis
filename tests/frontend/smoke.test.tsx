@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
-import Home from "../../app/page";
+import { Home } from "../../app/page";
 
 describe("Ekphrasis upload surface", () => {
   it("renders the English upload surface without invoking providers", () => {
