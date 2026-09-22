@@ -3,7 +3,7 @@ import {
   classifyProviderError,
   decideProviderFailure,
   type ProviderFailureClass
-} from "../../lib/pipeline/policy";
+} from "../../../lib/pipeline/policy";
 
 describe("provider failure policy", () => {
   it("normalizes timeout failures", () => {
@@ -11,7 +11,7 @@ describe("provider failure policy", () => {
   });
 
   it("treats missing candidate fields as unavailable evidence", async () => {
-    const { evidenceForField } = await import("../../lib/matching/evidence");
+    const { evidenceForField } = await import("../../../lib/matching/evidence");
     expect(evidenceForField(undefined, "year")).toBe("UNAVAILABLE");
   });
 
