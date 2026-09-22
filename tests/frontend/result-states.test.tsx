@@ -9,6 +9,21 @@ describe("result states", () => {
     expect(screen.queryByText(/searching museums/i)).toBeNull();
   });
 
+  it("shows related reading when supplied", () => {
+    render(<Home initialState="MATCH" result={{
+      state: "MATCH",
+      confidence: "medium",
+      artwork: { title: "Example", artist: "Artist", year: "1900", medium: "Oil on canvas", style: null },
+      source: { id: "met", name: "The Met", image_url: null, url: null },
+      context: null,
+      detail: null,
+      related_reading: [{ title: "Example.org", url: "https://example.org/reading" }],
+      degraded: false,
+      unavailable_sources: []
+    }} />);
+    expect(screen.getByRole("link", { name: "Example.org" })).toBeTruthy();
+  });
+
   it("shows medium with artist and year and hides style when absent", () => {
     render(<Home initialState="MATCH" result={{
       state: "MATCH",
