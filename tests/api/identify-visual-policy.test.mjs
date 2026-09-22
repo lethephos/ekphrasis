@@ -35,7 +35,7 @@ test('visual fallback may select a visually matched candidate when metadata is u
       candidate,
     }),
     gate: (item) => ({ status: item.score >= 0.8 ? 'match' : 'no_match', confidence: item.score >= 0.8 ? 'high' : 'low', useVisualFallback: item.score < 0.8 }),
-    visual: { resolve: async () => ({ similarity: 0.99, candidate: { institution: 'Visual Museum', objectId: '2', title: null, artist: null, artworkUrl: 'vu', imageUrl: 'vi' } }) },
+    visual: { resolve: async () => ({ similarity: 0.99, candidate: { institution: 'Visual Museum', objectId: '2', title: 'Visual Title', artist: 'Visual Artist', artworkUrl: 'vu', imageUrl: 'vi' } }) },
   })).identify(Buffer.from('x'));
   assert.equal(result.status, 'match');
   assert.equal(result.source.institution, 'Visual Museum');
