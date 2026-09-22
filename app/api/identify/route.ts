@@ -5,7 +5,7 @@ import { identifyImage } from "../../../lib/pipeline/identify";
 import { UpstashResultCache } from "../../../lib/cache/upstash";
 import { SlidingWindowRateLimiter, createRequestIdentity } from "../../../lib/rate-limit/rate-limit";
 import { UpstashRateLimitStore } from "../../../lib/rate-limit/upstash";
-import { GoogleVisionAdapter } from "../../../lib/vision/google";
+import { HuggingFaceVisionAdapter } from "../../../lib/vision/huggingface";
 import { MetAdapter } from "../../../lib/museums/met";
 import { RijksmuseumAdapter } from "../../../lib/museums/rijksmuseum";
 import { ArticAdapter } from "../../../lib/museums/artic";
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
       {
         cache: new UpstashResultCache(),
         limiter: { check: async () => ({ allowed: true }) },
-        vision: new GoogleVisionAdapter(),
+        vision: new HuggingFaceVisionAdapter(),
         museums,
         clip: clipConfigured
           ? {
