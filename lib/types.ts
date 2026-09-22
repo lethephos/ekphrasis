@@ -34,6 +34,8 @@ export type ArtworkCandidate = {
     style: string | null;
   };
   evidence: Evidence;
+  /** Internal provenance for evidence matches; omitted on candidates created outside the Vision pipeline. */
+  evidence_support?: Partial<Record<keyof Evidence, string[]>>;
 };
 
 export type IdentificationResult =
