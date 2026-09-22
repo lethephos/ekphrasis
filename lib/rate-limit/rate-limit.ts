@@ -1,11 +1,12 @@
 import { createHmac } from "node:crypto";
 
 export type RateLimitDecision = { allowed: boolean; retryAfterSeconds?: number };
-export type RateLimitStore = Map<string, number[]> | {
+export interface RateLimitStore {
   add(key: string, timestamp: number): Promise<void>;
   prune(key: string, before: number): Promise<void>;
   countSince(key: string, since: number): Promise<number>;
-};
+}
+export type MemoryRateLimitStore = Map<string, number[]>;
 
 export async function createRequestIdentity(address: string, secret: string): Promise<string> {
   return createHmac("sha256", secret).update(address).digest("hex");
@@ -13,7 +14,7 @@ export async function createRequestIdentity(address: string, secret: string): Pr
 
 export class SlidingWindowRateLimiter {
   constructor(
-    private readonly store: RateLimitStore,
+    private readonly store: RateLimitStore | MemoryRateLimitStore,
     private readonly now = () => Date.now()
   ) {}
 
