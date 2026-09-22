@@ -1,6 +1,6 @@
 import type { ArtworkCandidate } from "../types";
 import type { Fetcher, MuseumAdapter } from "./types";
-import { ProviderError } from "../errors";
+import { requestJson } from "./request";
 
 export class MetAdapter implements MuseumAdapter {
   id = "met";
@@ -40,19 +40,4 @@ function stringOrNull(value: unknown): string | null {
 }
 function emptyEvidence() {
   return { vision_text_match: "UNAVAILABLE", artist_match: "UNAVAILABLE", title_match: "UNAVAILABLE", date_match: "UNAVAILABLE", medium_match: "UNAVAILABLE", image_similarity: "UNAVAILABLE" } as const;
-}
-async function requestJson<T>(fetcher: Fetcher, url: string, provider: string): Promise<T> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 6_000);
-  try {
-    const response = await fetcher(url, { signal: controller.signal });
-    if (!response.ok) throw new ProviderError(provider, response.status === 429 ? "RATE_LIMITED" : response.status === 404 ? "NOT_FOUND" : "PROVIDER_ERROR", `Museum provider returned ${response.status}.`);
-    return await response.json() as T;
-  } catch (error) {
-    if (error instanceof ProviderError) throw error;
-    if (error instanceof DOMException && error.name === "AbortError") throw new ProviderError(provider, "TIMEOUT", "Museum request timed out.");
-    throw new ProviderError(provider, "NETWORK", "Museum request failed.");
-  } finally {
-    clearTimeout(timer);
-  }
 }
