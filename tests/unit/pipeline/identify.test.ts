@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { IdentificationResult } from "../../../lib/types";
 import { evidenceCandidates, identifyImage } from "../../../lib/pipeline/identify";
+import { scoreCandidates } from "../../../lib/matching/score";
 
 describe("identification pipeline", () => {
   it("maps independent Vision text candidates to title and artist evidence without false negatives", () => {
@@ -20,6 +21,24 @@ describe("identification pipeline", () => {
     expect(candidate.evidence.artist_match).toBe("MATCH");
     expect(candidate.evidence.date_match).toBe("UNAVAILABLE");
     expect(candidate.evidence.medium_match).toBe("UNAVAILABLE");
+  });
+
+  it("does not count one Vision query as two independent evidence signals", () => {
+    const [candidate] = evidenceCandidates([{
+      source: { id: "met", name: "The Met", image_url: null, url: null },
+      artwork: { title: "Example", artist: "Example", year: null, medium: null, style: null },
+      evidence: {
+        vision_text_match: "UNAVAILABLE",
+        artist_match: "UNAVAILABLE",
+        title_match: "UNAVAILABLE",
+        date_match: "UNAVAILABLE",
+        medium_match: "UNAVAILABLE",
+        image_similarity: "UNAVAILABLE"
+      }
+    }], ["Example"]);
+    expect(candidate.evidence.title_match).toBe("MATCH");
+    expect(candidate.evidence.artist_match).toBe("MATCH");
+    expect(scoreCandidates([candidate])[0].strongPositiveCount).toBe(1);
   });
 
   it("rejects oversized uploads before reading or hashing them", async () => {
