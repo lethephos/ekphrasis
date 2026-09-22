@@ -56,3 +56,19 @@ test('rejects promotion when stored vector dimensions differ', async () => {
 
   await assert.rejects(() => promotion.promote(valid), /DIMENSION_MISMATCH/);
 });
+
+
+test('promotes by atomically switching an existing alias', async () => {
+  const calls = [];
+  const promotion = createQdrantPromotion({
+    client: {
+      async count() { return { count: 4 }; },
+      async getCollection() { return { config: { params: { vectors: { size: 512 } } } }; },
+      async setAlias(alias, collection) { calls.push(['alias', alias, collection]); },
+    },
+    requiredSources: ['The Met', 'Rijksmuseum', 'AIC', 'Smithsonian'],
+    alias: 'ekphrasis-clip-current',
+  });
+  await promotion.promote(valid);
+  assert.deepEqual(calls, [['alias', 'ekphrasis-clip-current', valid.collection]]);
+});
