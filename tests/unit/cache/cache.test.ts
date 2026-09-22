@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cacheClassFor, ttlFor } from "../../lib/pipeline/cache-policy";
+import { cacheClassFor, ttlFor } from "../../../lib/pipeline/cache-policy";
 
 describe("result cache policy", () => {
   it("caches normal match and no-match for 7 days", () => {
