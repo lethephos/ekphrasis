@@ -2,7 +2,7 @@
 
 ## 1. Purpose and constraints
 
-Ekphrasis is a web service that identifies paintings from photos — “Shazam for paintings.”
+Ekphrasis is a web service that identifies paintings from photos.
 
 MVP constraints:
 - The interface, result copy, and project documentation are in English.
