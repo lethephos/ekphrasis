@@ -24,7 +24,7 @@ The architecture specification lives at `docs/superpowers/specs/2026-09-21-ekphr
 
 ## Repository
 
-Implementation is planned as a Next.js application on Vercel. Uploaded photos are ephemeral; provider credentials remain server-side. Railway is not part of the architecture.
+Implementation is a Next.js application targeting Vercel. The current branch includes the identification API boundary, image lifecycle, museum adapters, deterministic matching, local CLIP/Qdrant fallback wiring, factual enrichment, and the mobile-first result experience. The first live Qdrant corpus is still a deployment gate: it must be built and validated from a real museum snapshot before the fallback is considered production-ready. Uploaded photos are ephemeral; provider credentials remain server-side. Railway is not part of the architecture.
 
 ## API runtime
 
