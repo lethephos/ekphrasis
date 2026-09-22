@@ -34,6 +34,3 @@ export function Home({
     </main>
   );
 }
-export default function Page() {
-  return <Home />;
-}
