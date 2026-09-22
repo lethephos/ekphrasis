@@ -1,6 +1,7 @@
 import type { ArtworkCandidate } from "../types";
 import type { Fetcher, MuseumAdapter } from "./types";
 import { ProviderError } from "../errors";
+import { requestJson } from "./request";
 
 export class RijksmuseumAdapter implements MuseumAdapter {
   id = "rijksmuseum";
@@ -8,9 +9,11 @@ export class RijksmuseumAdapter implements MuseumAdapter {
   constructor(private readonly fetcher: Fetcher = fetch, private readonly apiKey = process.env.RIJKSMUSEUM_API_KEY ?? "") {}
   async search(query: string): Promise<ArtworkCandidate[]> {
     if (!this.apiKey) throw new ProviderError(this.id, "AUTH", "Rijksmuseum API key is not configured.");
-    const response = await this.fetcher(`https://www.rijksmuseum.nl/api/en/collection?key=${encodeURIComponent(this.apiKey)}&q=${encodeURIComponent(query)}&ps=5&imgonly=true`);
-    if (!response.ok) throw new ProviderError(this.id, response.status === 429 ? "RATE_LIMITED" : "PROVIDER_ERROR", "Rijksmuseum request failed.");
-    const json = await response.json() as { artObjects?: Array<Record<string, unknown>> };
+    const json = await requestJson<{ artObjects?: Array<Record<string, unknown>> }>(
+      this.fetcher,
+      `https://www.rijksmuseum.nl/api/en/collection?key=${encodeURIComponent(this.apiKey)}&q=${encodeURIComponent(query)}&ps=5&imgonly=true`,
+      this.id
+    );
     return (json.artObjects ?? []).map(record => {
       const webImage = typeof record.webImage === "object" && record.webImage ? record.webImage as Record<string, unknown> : {};
       return {
