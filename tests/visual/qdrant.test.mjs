@@ -40,3 +40,22 @@ test('Qdrant admin client uses the documented collection, point, count, and alia
   const aliasActions = JSON.parse(calls[4][2]).actions;
   assert.deepEqual(aliasActions, [{ create_alias: { alias_name: 'ekphrasis-clip-current', collection_name: 'ekphrasis-clip-2026-09-22' } }]);
 });
+
+
+test('Qdrant admin client atomically replaces an existing alias', async () => {
+  const calls = [];
+  const client = createQdrantAdminClient({
+    endpoint: 'https://qdrant.example',
+    apiKey: 'key',
+    fetchImpl: async (url, options) => {
+      calls.push([url, options.method, options.body]);
+      if (url.endsWith('/aliases') && options.method === 'GET') return { ok: true, json: async () => ({ result: { aliases: [{ alias_name: 'ekphrasis-clip-current', collection_name: 'old' }] } }) };
+      return { ok: true, json: async () => ({ result: true }) };
+    },
+  });
+  await client.switchAlias('ekphrasis-clip-current', 'ekphrasis-clip-2026-09-22');
+  assert.deepEqual(JSON.parse(calls[1][2]).actions, [
+    { delete_alias: { alias_name: 'ekphrasis-clip-current' } },
+    { create_alias: { collection_name: 'ekphrasis-clip-2026-09-22', alias_name: 'ekphrasis-clip-current' } },
+  ]);
+});
