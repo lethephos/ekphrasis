@@ -1,6 +1,6 @@
 # Ekphrasis
 
-Ekphrasis is a web service for identifying paintings from photographs — “Shazam for paintings.”
+Ekphrasis is a web service for identifying paintings from photographs.
 
 ## Architecture demo
 
