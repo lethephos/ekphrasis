@@ -22,7 +22,7 @@ test('request byte reader cancels a stream that crosses the upload ceiling', asy
 
 
 test('health endpoint contract is a no-store JSON response', async () => {
-  const { GET } = await import('../../app/api/health/route.ts');
+  const { GET } = await import('../../app/api/health/route.js');
   const response = await GET();
   assert.equal(response.status, 200);
   assert.equal(response.headers.get('cache-control'), 'no-store');
