@@ -28,7 +28,7 @@ export const demoRun = {
         ["year_match", "UNAVAILABLE"],
         ["medium_match", "MATCH"],
       ],
-      score: 0.91,
+      score: 0.96,
     },
     {
       name: "Rijksmuseum",
@@ -58,7 +58,7 @@ export const demoRun = {
         ["year_match", "MATCH"],
         ["medium_match", "MATCH"],
       ],
-      score: 0.96,
+      score: 0.89,
     },
     {
       name: "Smithsonian",
@@ -103,7 +103,7 @@ export const demoRun = {
     artwork: {
       title: "Wheat Field with Cypresses, 1889",
       artist: "Vincent van Gogh",
-      year: "1876",
+      year: "1889",
       medium: "Oil on canvas",
       style: null,
       museum: "The Metropolitan Museum of Art",
@@ -119,7 +119,7 @@ export const demoRun = {
     },
     relatedReading: [
       { title: "Vincent van Gogh — Wikipedia", url: "https://en.wikipedia.org/wiki/Vincent_van_Gogh", source: "wikipedia" },
-      { title: "Van Gogh at The Met", url: "https://www.metmuseum.org/art/collection/search/436535", source: "wikipedia" },
+      { title: "Saint-Rémy-de-Provence — Wikipedia", url: "https://en.wikipedia.org/wiki/Saint-R%C3%A9my-de-Provence", source: "wikipedia" },
     ],
   },
   telemetry: {
