@@ -20,3 +20,19 @@ test('runtime composition wires the real image, Vision, museum, cache, limiter, 
 test('runtime refuses to start without the required Vision credential', () => {
   assert.throws(() => createRuntime({ env: {} }), /VISION_CONFIG_MISSING/);
 });
+
+
+test('runtime wires local Transformers.js CLIP when Qdrant is configured', () => {
+  const runtime = createRuntime({
+    env: {
+      GOOGLE_VISION_API_KEY: 'vision',
+      QDRANT_URL: 'https://qdrant.example',
+      QDRANT_API_KEY: 'qdrant',
+      QDRANT_COLLECTION: 'ekphrasis-clip-current',
+    },
+    fetchImpl: async () => { throw new Error('not called'); },
+    clipPipelineFactory: async () => async () => ({ data: new Float32Array([1, 0]), dims: [1, 2] }),
+    clipImageLoader: async () => ({ kind: 'image' }),
+  });
+  assert.ok(runtime.visual);
+});
