@@ -17,6 +17,7 @@ describe("result states", () => {
       source: { id: "met", name: "The Met", image_url: "https://example.com/art.jpg", url: "https://example.com" },
       context: "Context.",
       detail: "Detail.",
+      related_reading: [],
       degraded: false,
       unavailable_sources: []
     }} />);
