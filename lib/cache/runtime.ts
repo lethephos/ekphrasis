@@ -1,6 +1,18 @@
 import type { IdentificationResult } from "../types";
 import type { ResultCache } from "./cache";
 
+export class MemoryResultCache implements ResultCache {
+  private readonly values = new Map<string, IdentificationResult>();
+
+  async get(hash: string): Promise<IdentificationResult | null> {
+    return this.values.get(hash) ?? null;
+  }
+
+  async set(hash: string, result: IdentificationResult): Promise<void> {
+    this.values.set(hash, result);
+  }
+}
+
 export class ResilientResultCache implements ResultCache {
   constructor(
     private readonly primary: ResultCache,
