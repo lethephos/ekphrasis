@@ -1,21 +1,17 @@
 import { Redis } from "@upstash/redis";
 import type { RateLimitStore } from "./rate-limit";
 
-type Entry = { timestamp: number };
-
 export class UpstashRateLimitStore implements RateLimitStore {
   constructor(private readonly redis = Redis.fromEnv()) {}
-
+  private key(key: string) { return `ekphrasis:rate:${key}`; }
   async add(key: string, timestamp: number): Promise<void> {
-    await this.redis.zadd(`ekphrasis:rate:${key}`, { score: timestamp, member: `${timestamp}:${Math.random()}` });
-    await this.redis.expire(`ekphrasis:rate:${key}`, 3600);
+    await this.redis.zadd(this.key(key), { score: timestamp, member: `${timestamp}:${crypto.randomUUID()}` });
+    await this.redis.expire(this.key(key), 3600);
   }
-
   async prune(key: string, before: number): Promise<void> {
-    await this.redis.zremrangebyscore(`ekphrasis:rate:${key}`, 0, before);
+    await this.redis.zremrangebyscore(this.key(key), 0, before);
   }
-
-  async count(key: string): Promise<number> {
-    return await this.redis.zcard(`ekphrasis:rate:${key}`);
+  async countSince(key: string, since: number): Promise<number> {
+    return await this.redis.zcount(this.key(key), since, Date.now());
   }
 }
