@@ -21,6 +21,17 @@ describe("identification pipeline", () => {
     expect(candidate.evidence.medium_match).toBe("UNAVAILABLE");
   });
 
+  it("rejects oversized uploads before reading or hashing them", async () => {
+    const result = await identifyImage(
+      { file: new File([new Uint8Array(10 * 1024 * 1024 + 1)], "large.jpg", { type: "image/jpeg" }), address: "test" },
+      {
+        cache: { get: async () => { throw new Error("cache should not run"); }, set: async () => {} },
+        limiter: { check: async () => ({ allowed: true }) }
+      }
+    );
+    expect(result).toEqual({ state: "ERROR", error: "UNSUPPORTED_INPUT" });
+  });
+
   it("returns a cached result without invoking providers", async () => {
     const cached = { state: "NO_MATCH", reason: "insufficient_evidence", degraded: false, unavailable_sources: [] } as const;
     const result = await identifyImage(
