@@ -137,3 +137,61 @@ h1 { font-size:clamp(38px,6vw,72px); line-height:.98; letter-spacing:-.055em; ma
   .footer { padding:24px 18px 40px; flex-direction:column; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto; } }
+
+/* Finpath-inspired visual refresh: editorial SaaS clarity, warmer surfaces, restrained accents. */
+:root {
+  --bg:#f4f1ea; --panel:#fffdf8; --panel-2:#f8f5ee; --line:#ded9cf;
+  --muted:#77746d; --text:#24241f; --paper:#c8a96b; --green:#4e8061;
+  --amber:#a7782d; --red:#b65b52; --blue:#5d7891;
+  --shadow:0 12px 34px rgba(55,48,35,.07); --soft-shadow:0 4px 16px rgba(55,48,35,.05);
+  --mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+  --sans:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+body{background:radial-gradient(circle at 88% 4%,rgba(200,169,107,.12),transparent 26rem),var(--bg);color:var(--text)}
+.topbar{height:72px;padding:0 38px;background:rgba(244,241,234,.9);border-color:var(--line);backdrop-filter:blur(18px)}
+.wordmark{letter-spacing:.14em;color:var(--text)} .wordmark span{color:var(--muted)}
+.topbar-meta{color:var(--muted)} .live-dot{background:var(--green);box-shadow:0 0 0 4px rgba(78,128,97,.1)}
+main{max-width:1320px;padding:0 34px 90px}
+.hero{padding:72px 0 52px;border-bottom:0}.hero-grid{grid-template-columns:minmax(0,1fr) 310px;gap:70px}
+.eyebrow{color:#8a806f;font-weight:600} h1{font-size:clamp(46px,7vw,86px);line-height:.94;letter-spacing:-.065em;margin:16px 0 24px;max-width:900px}
+.lede{color:#67635b;max-width:720px;font-size:17px;line-height:1.65}
+.run-card{border:1px solid var(--line);border-radius:18px;background:rgba(255,253,248,.8);box-shadow:var(--shadow);padding:22px;min-width:0}
+.run-card strong{color:var(--green);font-size:17px}.meta-row{margin-top:28px}
+.pill{background:rgba(255,253,248,.72);border-color:var(--line);border-radius:9px;color:#68645c;padding:8px 10px}
+.section{padding:54px 0;border-bottom:0}.section-head{margin-bottom:22px}
+.section-title{font-size:30px;letter-spacing:-.045em}.section-note{color:#858078}
+.pipeline{grid-template-columns:repeat(7,minmax(0,1fr));gap:10px}
+.stage{min-height:190px;padding:19px;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--soft-shadow);transition:transform .18s ease,box-shadow .18s ease}
+.stage:hover,.provider:hover,.card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.stage:not(:last-child)::after{content:"→";right:-11px;top:23px;color:#aaa398}.stage-num{color:#aaa398}
+.stage h3{margin:34px 0 9px;font-size:14px}.stage p{color:#817c73}.status{font-weight:650}
+.complete{color:var(--green)}.degraded{color:var(--amber)}.skipped,.neutral{color:#8b877f}.mismatch{color:var(--red)}
+.providers{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.provider{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:21px;min-height:290px;box-shadow:var(--soft-shadow);transition:transform .18s ease,box-shadow .18s ease}
+.provider-code{border-radius:7px;background:var(--panel-2);border-color:var(--line);color:#777168}
+.provider-meta{color:#858078}.evidence{gap:8px}.evidence-row{padding:8px 0;border-bottom:1px solid #ece8e0}
+.evidence-label{color:#69655d}.signal{border-radius:6px;background:rgba(255,255,255,.45)}
+.signal.MATCH{color:var(--green)}.signal.MISMATCH{color:var(--red)}.signal.UNAVAILABLE{color:#8b877f}
+.scorebar{height:5px;border-radius:99px;background:#ebe6dc;margin-top:20px;overflow:hidden}.scorebar i{background:var(--green);border-radius:inherit}
+.source-expansion,.card{background:var(--panel);border-color:var(--line);border-radius:16px;box-shadow:var(--soft-shadow)}
+.source-expansion summary{color:#5f5b54}.source-list{border-color:var(--line)}.source-row{background:var(--panel-2)}
+.two-col{gap:14px}.card{padding:26px}.score-big{font-size:64px;color:var(--text)}.rationale{color:#77736b;line-height:1.6}
+.evidence-detail .evidence-row{border-color:#ebe7df}.fallback-card{min-height:112px}
+.fallback-icon{border-color:var(--line);border-radius:12px;background:var(--panel-2);color:var(--blue)}
+.result-layout{grid-template-columns:minmax(360px,.85fr) 1.15fr;gap:42px}
+.art-frame{min-height:540px;background:#ded7c8;border:0;border-radius:18px;box-shadow:var(--shadow)}
+.art-frame img{min-height:540px;object-fit:cover}.source-label{color:#89847b;margin:12px 4px 0}
+.result-kicker{color:var(--green)}.result-title{font-size:clamp(40px,5.5vw,68px);letter-spacing:-.06em;margin:12px 0 28px}
+.metadata{border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.metadata div{padding:17px 13px 18px;border-color:var(--line)}.metadata strong{color:var(--text)}
+.metadata small{display:block;color:#9a9388;font:500 9px var(--mono);text-transform:uppercase;margin-top:5px}
+.copy-block h3{color:#8a806f}.copy-block p{color:#625e56;line-height:1.75}
+.source-note{border-left:2px solid var(--paper);background:#faf7f0;border-radius:0 10px 10px 0;padding:15px 18px}
+.source-note a{color:#5f5748}.reading a{border-color:var(--line);border-radius:9px;background:var(--panel);color:#625e56}.reading a:hover{background:var(--panel-2)}
+.telemetry{grid-template-columns:repeat(5,1fr);gap:10px;background:transparent;border:0}
+.metric{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--soft-shadow);padding:19px}
+.metric span{color:#8b867d}.metric strong{color:var(--text)}
+.footer{max-width:1320px;padding:28px 34px 52px;color:#8b867d;border-top:1px solid var(--line)}
+@media(max-width:1100px){.pipeline{grid-template-columns:repeat(4,1fr)}.stage:not(:last-child)::after{display:none}.providers{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.topbar{padding:0 20px}main{padding:0 20px 60px}.hero-grid{grid-template-columns:1fr;gap:32px}.pipeline{grid-template-columns:repeat(2,1fr)}.result-layout{grid-template-columns:1fr}.art-frame,.art-frame img{min-height:420px}.telemetry{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.hero{padding-top:48px}.pipeline,.providers,.telemetry{grid-template-columns:1fr}.section{padding:42px 0}.result-title{font-size:43px}}
