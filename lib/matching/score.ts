@@ -4,7 +4,10 @@ const weight: Record<Exclude<EvidenceState, "UNAVAILABLE">, number> = { MATCH: 3
 export function scoreCandidates(candidates: ArtworkCandidate[]): ScoredCandidate[] {
   return candidates.map(candidate => {
     const states = Object.values(candidate.evidence);
-    const strongPositiveCount = states.filter(state => state === "MATCH").length;
+    const supportedSignals = Object.values(candidate.evidence_support ?? {}).flatMap(signals => signals ?? []);
+    const strongPositiveCount = supportedSignals.length
+      ? new Set(supportedSignals).size
+      : states.filter(state => state === "MATCH").length;
     const strongNegative = states.includes("MISMATCH");
     const score = states.reduce((total, state) => state === "UNAVAILABLE" ? total : total + weight[state], 0);
     return { ...candidate, score, strongPositiveCount, strongNegative };
