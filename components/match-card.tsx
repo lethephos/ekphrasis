@@ -11,6 +11,13 @@ export function MatchCard({ result }: { result: Extract<IdentificationResult, { 
       {result.artwork.style ? <p><span>Style</span> · {result.artwork.style}</p> : null}
       {result.context ? <p>{result.context}</p> : null}
       {result.detail ? <p>{result.detail}</p> : null}
+      {result.related_reading.length ? (
+        <section aria-label="Related reading">
+          {result.related_reading.map(link => (
+            <a key={link.url} href={link.url} target="_blank" rel="noreferrer">{link.title}</a>
+          ))}
+        </section>
+      ) : null}
       <SourceAnnotation name={result.source.name} url={result.source.url} />
     </article>
   );
