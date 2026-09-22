@@ -1,0 +1,32 @@
+import type { ArtworkCandidate } from "../types";
+import type { Fetcher, MuseumAdapter } from "./types";
+import { ProviderError } from "../errors";
+
+export class ArticAdapter implements MuseumAdapter {
+  id = "aic";
+  name = "Art Institute of Chicago";
+  constructor(private readonly fetcher: Fetcher = fetch) {}
+
+  async search(query: string): Promise<ArtworkCandidate[]> {
+    const url = `https://api.artic.edu/api/v1/artworks/search?q=${encodeURIComponent(query)}&limit=5&fields=id,title,date_display,artist_display,medium_display,style_title,image_id`;
+    const response = await this.fetcher(url);
+    if (!response.ok) throw new ProviderError(this.id, response.status === 429 ? "RATE_LIMITED" : "PROVIDER_ERROR", "Art Institute request failed.");
+    const json = await response.json() as { data?: Array<Record<string, unknown>> };
+    return (json.data ?? []).map(record => {
+      const imageId = typeof record.image_id === "string" ? record.image_id : null;
+      return {
+        source: { id: this.id, name: this.name, image_url: imageId ? `https://www.artic.edu/iiif/2/${imageId}/full/843,/0/default.jpg` : null, url: typeof record.id === "number" ? `https://www.artic.edu/artworks/${record.id}` : null },
+        artwork: {
+          title: stringOrNull(record.title),
+          artist: stringOrNull(record.artist_display),
+          year: stringOrNull(record.date_display),
+          medium: stringOrNull(record.medium_display),
+          style: stringOrNull(record.style_title)
+        },
+        evidence: emptyEvidence()
+      };
+    });
+  }
+}
+function stringOrNull(value: unknown): string | null { return typeof value === "string" && value.trim() ? value : null; }
+function emptyEvidence() { return { vision_text_match: "UNAVAILABLE", artist_match: "UNAVAILABLE", title_match: "UNAVAILABLE", date_match: "UNAVAILABLE", medium_match: "UNAVAILABLE", image_similarity: "UNAVAILABLE" } as const; }
