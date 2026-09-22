@@ -95,3 +95,19 @@ test('identify pipeline can use visual fallback when metadata search yields no c
   assert.equal(visualCalled, true);
   assert.equal(result.status, 'match');
 });
+
+
+test('identify pipeline includes factual enrichment fields in match results', async () => {
+  const pipeline = createIdentifyPipeline({
+    validate: async () => ({ format: 'jpeg', byteLength: 1 }), hash: async () => 'enrich',
+    cache: { get: async () => null, set: async () => {} }, rateLimiter: { check: async () => ({ allowed: true }) },
+    normalize: async (bytes) => ({ bytes }), vision: { detect: async () => ({ signals: [{ value: 'Work', type: 'title' }] }) },
+    museums: [{ search: async () => [{ institution: 'A', objectId: '1', title: 'Work', artist: 'Artist', year: '1900', medium: 'Oil', style: null, imageUrl: 'https://img', artworkUrl: 'https://art', license: 'unknown' }] }],
+    score: (q, c) => ({ candidate: c, evidence: { title_match: 'MATCH' }, score: 1 }),
+    selectCanonical: (items) => items[0], gate: () => ({ status: 'match', confidence: 'high', useVisualFallback: false }),
+    enrich: async () => ({ style: null, styleSource: null, context: 'Context', detail: 'Detail' }),
+  });
+  const result = await pipeline.identify(new Uint8Array([1]), { clientKey: 'ip' });
+  assert.equal(result.context, 'Context');
+  assert.equal(result.detail, 'Detail');
+});
