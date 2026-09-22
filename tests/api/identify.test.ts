@@ -1,0 +1,32 @@
+import { afterEach, describe, expect, it } from "vitest";
+import { POST } from "../../app/api/identify/route";
+
+const originalSecret = process.env.RATE_LIMIT_HMAC_SECRET;
+
+afterEach(() => {
+  if (originalSecret === undefined) delete process.env.RATE_LIMIT_HMAC_SECRET;
+  else process.env.RATE_LIMIT_HMAC_SECRET = originalSecret;
+});
+
+describe("identify API boundary", () => {
+  it("rejects requests without an image", async () => {
+    const response = await POST(new Request("http://localhost/api/identify", {
+      method: "POST",
+      body: new FormData()
+    }));
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ state: "ERROR", error: "INVALID_IMAGE" });
+  });
+
+  it("does not initialize providers when the rate-limit secret is missing", async () => {
+    delete process.env.RATE_LIMIT_HMAC_SECRET;
+    const form = new FormData();
+    form.append("image", new File([new Uint8Array([1])], "x.jpg", { type: "image/jpeg" }));
+    const response = await POST(new Request("http://localhost/api/identify", {
+      method: "POST",
+      body: form
+    }));
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ state: "ERROR", error: "PROCESSING_FAILED" });
+  });
+});
