@@ -58,9 +58,7 @@ function renderProviders() {
           <div class="scorebar" aria-label="candidate score"><i style="width:${p.score * 100}%"></i></div>
           <div class="provider-meta" style="margin-bottom:0"><span>${esc(p.note)}</span><span>${p.score.toFixed(2)}</span></div>
         </article>`).join("")}
-    </div>`;
-}
-
+    </div>
     <details class="source-expansion">
       <summary>
         <span><strong>Museum coverage</strong> · ${demoRun.providers.length} active providers · ${demoRun.additionalSources.length} additional sources</span>
@@ -89,6 +87,8 @@ function renderProviders() {
         </div>
       </div>
     </details>`;
+}
+
 function renderScoring() {
   const m = demoRun.match;
   el("scoring").innerHTML = `
