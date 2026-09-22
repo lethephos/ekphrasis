@@ -4,7 +4,7 @@ import { embedCorpusArtifacts } from '../../lib/visual/clip-batch.js';
 
 test('CLIP batch embeds artifacts and preserves identity metadata', async () => {
   const result = await embedCorpusArtifacts({
-    artifacts: [{ institution: 'The Met', objectId: '1', sha256: 'abc', bytes: new Uint8Array([1, 2]) }],
+    artifacts: [{ institution: 'The Met', objectId: '1', sha256: 'abc', imageUrl: 'https://img/1', artworkUrl: 'https://art/1', bytes: new Uint8Array([1, 2]) }],
     embed: async (bytes) => {
       assert.deepEqual([...bytes], [1, 2]);
       return [0.1, 0.2, 0.3];
@@ -18,7 +18,7 @@ test('CLIP batch embeds artifacts and preserves identity metadata', async () => 
     points: [{
       id: 'The Met:1',
       vector: [0.1, 0.2, 0.3],
-      payload: { institution: 'The Met', objectId: '1', sha256: 'abc' },
+      payload: { institution: 'The Met', objectId: '1', sha256: 'abc', imageUrl: 'https://img/1', artworkUrl: 'https://art/1' },
     }],
   });
 });
