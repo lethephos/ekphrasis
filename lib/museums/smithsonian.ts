@@ -1,6 +1,7 @@
 import type { ArtworkCandidate } from "../types";
 import type { Fetcher, MuseumAdapter } from "./types";
 import { ProviderError } from "../errors";
+import { requestJson } from "./request";
 
 export class SmithsonianAdapter implements MuseumAdapter {
   id = "smithsonian";
@@ -8,9 +9,11 @@ export class SmithsonianAdapter implements MuseumAdapter {
   constructor(private readonly fetcher: Fetcher = fetch, private readonly apiKey = process.env.SMITHSONIAN_API_KEY ?? "") {}
   async search(query: string): Promise<ArtworkCandidate[]> {
     if (!this.apiKey) throw new ProviderError(this.id, "AUTH", "Smithsonian API key is not configured.");
-    const response = await this.fetcher(`https://api.si.edu/openaccess/api/v1.0/search?q=${encodeURIComponent(query)}&api_key=${encodeURIComponent(this.apiKey)}&rows=5`);
-    if (!response.ok) throw new ProviderError(this.id, response.status === 429 ? "RATE_LIMITED" : "PROVIDER_ERROR", "Smithsonian request failed.");
-    const json = await response.json() as { response?: { rows?: Array<Record<string, unknown>> } };
+    const json = await requestJson<{ response?: { rows?: Array<Record<string, unknown>> } }>(
+      this.fetcher,
+      `https://api.si.edu/openaccess/api/v1.0/search?q=${encodeURIComponent(query)}&api_key=${encodeURIComponent(this.apiKey)}&rows=5`,
+      this.id
+    );
     return (json.response?.rows ?? []).map(record => ({
       source: { id: this.id, name: this.name, image_url: extractImage(record), url: stringOrNull(record.url) },
       artwork: { title: stringOrNull(record.title), artist: null, year: null, medium: null, style: null },
