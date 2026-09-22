@@ -20,6 +20,14 @@ test('Wikipedia/Wikidata supplies style only from explicit classification', asyn
   assert.deepEqual(result, { style: 'Post-Impressionism', styleSource: 'wikipedia' });
 });
 
+test('Wikidata supplies style only from explicit classification', async () => {
+  const result = await enrichStyle(
+    { title: 'Work', artist: 'Artist', style: null },
+    { lookup: async () => ({ style: 'Impressionism', source: 'wikidata' }) }
+  );
+  assert.deepEqual(result, { style: 'Impressionism', styleSource: 'wikidata' });
+});
+
 test('unclassified fallback stays null', async () => {
   const result = await enrichStyle(
     { title: 'Unknown work', artist: 'Unknown artist', style: null },
