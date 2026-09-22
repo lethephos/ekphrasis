@@ -129,7 +129,7 @@ function renderResult() {
   const style = a.style;
   const styleSource = a.styleSource;
   const styleMarkup = style
-    ? `<div><span>Style</span><strong>${esc(style)}</strong><small class="metadata-source">${esc(styleSource === "wikipedia" ? "Wikipedia" : "Museum source")}</small></div>`
+    ? `<div><span>Style</span><strong>${esc(style)}</strong><small >${esc(styleSource === "wikipedia" ? "Wikipedia" : "Museum source")}</small></div>`
     : `<div><span>Style</span><strong>Not supplied by museum or Wikipedia</strong></div>`;
   el("result").innerHTML = `
     <div class="section-head"><div><div class="eyebrow">05 / Presentation</div><h2 class="section-title">The result</h2></div><div class="section-note">Provider-independent public model</div></div>
