@@ -38,7 +38,6 @@ export function UploadForm({ onResult }: { onResult: (result: IdentificationResu
         ref={inputRef}
         type="file"
         accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
-        capture="environment"
         hidden
         disabled={busy}
         onChange={event => {
