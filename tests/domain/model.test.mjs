@@ -25,6 +25,7 @@ test('buildIdentificationResult accepts a sourced style value', () => {
   });
 
   assert.equal(result.artwork.style, 'Post-Impressionism');
+  assert.equal(result.artwork.year, '1889');
   assert.equal(result.artwork.styleSource, 'wikipedia');
 });
 
