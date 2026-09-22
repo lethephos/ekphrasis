@@ -59,3 +59,20 @@ test('Qdrant admin client atomically replaces an existing alias', async () => {
     { create_alias: { collection_name: 'ekphrasis-clip-2026-09-22', alias_name: 'ekphrasis-clip-current' } },
   ]);
 });
+
+
+test('Qdrant query client uses the current query-points endpoint and response shape', async () => {
+  let request;
+  const client = createQdrantClient({
+    endpoint: 'https://qdrant.example',
+    apiKey: 'key',
+    collection: 'ekphrasis-clip-current',
+    fetchImpl: async (url, options) => {
+      request = [url, options.method, JSON.parse(options.body)];
+      return { ok: true, json: async () => ({ result: { points: [{ id: '1', score: 0.91, payload: { institution: 'The Met' } }] } }) };
+    },
+  });
+  assert.deepEqual(await client.search([1, 0]), [{ id: '1', score: 0.91, payload: { institution: 'The Met' } }]);
+  assert.equal(request[0], 'https://qdrant.example/collections/ekphrasis-clip-current/points/query');
+  assert.deepEqual(request[2], { query: [1, 0], limit: 10, with_payload: true });
+});
