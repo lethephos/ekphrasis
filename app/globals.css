@@ -56,3 +56,21 @@ h1 {
 }
 
 .upload-placeholder span { color: #77736a; }
+
+
+.uploader { margin-top: 40px; min-height: 150px; padding: 28px; border: 1px dashed #b9b3a8; border-radius: 18px; background: #fffdf8; display: grid; place-content: center; gap: 8px; text-align: center; cursor: pointer; }
+.uploader input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.uploader span { color: #77736a; }
+.results { width: min(920px, 100%); margin: 56px auto 0; }
+.result-card { overflow: hidden; border-radius: 20px; background: #fffdf8; box-shadow: 0 16px 50px rgba(37,37,31,.08); }
+.result-card img { display: block; width: 100%; max-height: 620px; object-fit: cover; }
+.result-copy { padding: 28px; }
+.result-copy h2, .state-card h2 { margin: 0 0 20px; font-size: clamp(32px, 6vw, 56px); line-height: 1; letter-spacing: -.035em; }
+dl { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px; margin: 0 0 24px; }
+dt { color: #77736a; font-size: 12px; text-transform: uppercase; letter-spacing: .12em; }
+dd { margin: 5px 0 0; }
+.result-section, .state-card { margin-top: 24px; padding: 28px; border-top: 1px solid #d8d2c7; }
+.result-section p:last-child { max-width: 760px; line-height: 1.7; }
+.result-section ul { margin: 0; padding-left: 20px; line-height: 1.9; }
+a { color: inherit; }
+@media (max-width: 640px) { .shell { padding: 22px; place-items: start center; } .intro { margin-top: 40px; } dl { grid-template-columns: 1fr; } }
