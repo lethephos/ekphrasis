@@ -5,8 +5,8 @@ import Home from "../../app/page";
 describe("result states", () => {
   it("shows the processing copy without provider-specific stages", () => {
     render(<Home initialState="PROCESSING" />);
-    expect(screen.getByText("Identifying your artwork…")).toBeInTheDocument();
-    expect(screen.queryByText(/searching museums/i)).not.toBeInTheDocument();
+    expect(screen.getByText("Identifying your artwork…")).toBeTruthy();
+    expect(screen.queryByText(/searching museums/i)).toBeNull();
   });
 
   it("shows medium with artist and year and hides style when absent", () => {
@@ -21,9 +21,9 @@ describe("result states", () => {
       degraded: false,
       unavailable_sources: []
     }} />);
-    expect(screen.getByText("Artist")).toBeInTheDocument();
-    expect(screen.getByText("1900")).toBeInTheDocument();
-    expect(screen.getByText("Oil on canvas")).toBeInTheDocument();
-    expect(screen.queryByText("Style")).not.toBeInTheDocument();
+    expect(screen.getByText("Artist")).toBeTruthy();
+    expect(screen.getByText("1900")).toBeTruthy();
+    expect(screen.getByText("Oil on canvas")).toBeTruthy();
+    expect(screen.queryByText("Style")).toBeNull();
   });
 });
