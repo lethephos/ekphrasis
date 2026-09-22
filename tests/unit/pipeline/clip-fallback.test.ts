@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { shouldUseClipFallback, type ClipIndex } from "../../lib/clip/fallback";
+import { shouldUseClipFallback, type ClipIndex } from "../../../lib/clip/fallback";
 
 describe("CLIP fallback", () => {
   it("runs only when primary evidence is insufficient", () => {
