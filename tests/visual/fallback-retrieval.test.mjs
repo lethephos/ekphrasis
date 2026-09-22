@@ -75,3 +75,19 @@ test('visual resolver returns no candidate when every hit conflicts with metadat
   assert.equal(result.candidate, null);
   assert.equal(result.similarity, 0.97);
 });
+
+
+test('visual resolver accepts request-scoped metadata compatibility', async () => {
+  const resolver = createVisualResolver({
+    embed: async () => [1, 0],
+    search: async () => [
+      { id: 'wrong', score: 0.97, payload: { institution: 'A', objectId: '1', title: 'Wrong' } },
+      { id: 'right', score: 0.91, payload: { institution: 'B', objectId: '2', title: 'Target' } },
+    ],
+  });
+  const result = await resolver.resolve(Buffer.from('x'), {
+    useVisualFallback: true,
+    isCompatible: (payload) => payload.title === 'Target',
+  });
+  assert.equal(result.candidate.objectId, '2');
+});
