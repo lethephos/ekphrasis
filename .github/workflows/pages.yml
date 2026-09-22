@@ -27,6 +27,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Validate JavaScript
+        run: |
+          node --check site/app.js
+          node --check site/data/demo-run.js
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
