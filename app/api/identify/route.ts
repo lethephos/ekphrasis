@@ -58,19 +58,20 @@ export async function POST(request: Request) {
       process.env.QDRANT_API_KEY
     );
 
+    const museums = [new MetAdapter(), new RijksmuseumAdapter(), new ArticAdapter(), new SmithsonianAdapter()];
     const result = await identifyImage(
       { file: file as File, address: identity },
       {
         cache: new UpstashResultCache(),
         limiter: { check: async () => ({ allowed: true }) },
         vision: new GoogleVisionAdapter(),
-        museums: [new MetAdapter(), new RijksmuseumAdapter(), new ArticAdapter(), new SmithsonianAdapter()],
+        museums,
         clip: clipConfigured
           ? {
               encoder: new HttpClipEncoder(),
               qdrant: new QdrantRuntimeAdapter(),
               index: clipIndex,
-              hydrate: refs => hydrateClipCandidates(refs, [new MetAdapter(), new RijksmuseumAdapter(), new ArticAdapter(), new SmithsonianAdapter()])
+              hydrate: refs => hydrateClipCandidates(refs, museums)
             }
           : undefined
       }
