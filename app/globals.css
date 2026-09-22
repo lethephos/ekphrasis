@@ -18,3 +18,5 @@ button:disabled { cursor: wait; opacity: .6; }
   button { width: 100%; }
   .upload-control { display: flex; }
 }
+
+.confidence-indicator { margin-top: 12px; font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; }
