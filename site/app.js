@@ -61,6 +61,34 @@ function renderProviders() {
     </div>`;
 }
 
+    <details class="source-expansion">
+      <summary>
+        <span><strong>Museum coverage</strong> · ${demoRun.providers.length} active providers · ${demoRun.additionalSources.length} additional sources</span>
+        <span class="status neutral">expand</span>
+      </summary>
+      <div class="source-groups">
+        <div>
+          <div class="eyebrow">Extended sources</div>
+          <div class="source-list">
+            ${demoRun.additionalSources.filter(s => s.tier === "extended").map(s => `
+              <div class="source-row">
+                <div><strong>${esc(s.name)}</strong><span>${esc(s.note)}</span></div>
+                <div><span class="provider-code">${esc(s.short)}</span><span class="status neutral">${esc(s.status)}</span></div>
+              </div>`).join("")}
+          </div>
+        </div>
+        <div>
+          <div class="eyebrow">Enrichment</div>
+          <div class="source-list">
+            ${demoRun.additionalSources.filter(s => s.tier === "enrichment").map(s => `
+              <div class="source-row">
+                <div><strong>${esc(s.name)}</strong><span>${esc(s.note)}</span></div>
+                <div><span class="provider-code">${esc(s.short)}</span><span class="status neutral">${esc(s.status)}</span></div>
+              </div>`).join("")}
+          </div>
+        </div>
+      </div>
+    </details>`;
 function renderScoring() {
   const m = demoRun.match;
   el("scoring").innerHTML = `
