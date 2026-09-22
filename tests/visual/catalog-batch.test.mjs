@@ -13,7 +13,7 @@ test('catalog batch isolates one provider failure and keeps successful records',
     { provider: 'met', records: [{ objectId: '1' }] },
     { provider: 'smithsonian', records: [{ objectId: '3' }] },
   ]);
-  assert.deepEqual(result.failures, [{ provider: 'aic', error: 'AIC_DOWN' }]);
+  assert.deepEqual(result.failures, [{ provider: 'aic', error: 'CATALOG_PROVIDER_UNAVAILABLE' }]);
 });
 
 test('catalog batch reports provider failure without exposing arbitrary error objects', async () => {
