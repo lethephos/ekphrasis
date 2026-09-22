@@ -15,19 +15,67 @@ export class SmithsonianAdapter implements MuseumAdapter {
       this.id
     );
     return (json.response?.rows ?? []).map(record => ({
-      source: { id: this.id, name: this.name, image_url: extractImage(record), url: stringOrNull(record.url) },
-      artwork: { title: stringOrNull(record.title), artist: null, year: null, medium: null, style: null },
+      source: {
+        id: this.id,
+        name: this.name,
+        image_url: extractImage(record),
+        url: extractRecordUrl(record)
+      },
+      artwork: {
+        title: extractTitle(record),
+        artist: null,
+        year: extractYear(record),
+        medium: extractMedium(record),
+        style: null
+      },
       evidence: emptyEvidence()
     }));
   }
 }
+function extractTitle(record: Record<string, unknown>): string | null {
+  const direct = stringOrNull(record.title);
+  if (direct) return direct;
+  const content = asRecord(record.content);
+  return stringOrNull(asRecord(asRecord(content).descriptiveNonRepeating).title) ??
+    stringOrNull(asRecord(asRecord(asRecord(content).descriptiveNonRepeating).title).content);
+}
+function extractRecordUrl(record: Record<string, unknown>): string | null {
+  const content = asRecord(record.content);
+  const descriptive = asRecord(content.descriptiveNonRepeating);
+  return stringOrNull(record.url) ?? stringOrNull(descriptive.record_link);
+}
 function extractImage(record: Record<string, unknown>): string | null {
-  const content = record.content;
-  if (Array.isArray(content)) {
-    const first = content.find(item => typeof item === "object" && item && typeof (item as Record<string, unknown>).online_text === "string");
-    if (first && typeof (first as Record<string, unknown>).online_text === "string") return (first as Record<string, unknown>).online_text as string;
+  const content = asRecord(record.content);
+  const descriptive = asRecord(content.descriptiveNonRepeating);
+  const onlineMedia = asRecord(descriptive.online_media);
+  const media = Array.isArray(onlineMedia.media) ? onlineMedia.media : [];
+  for (const item of media) {
+    const mediaRecord = asRecord(item);
+    if (stringOrNull(mediaRecord.type)?.toLowerCase() === "images") {
+      return stringOrNull(mediaRecord.content) ?? stringOrNull(mediaRecord.thumbnail);
+    }
   }
   return null;
+}
+function extractYear(record: Record<string, unknown>): string | null {
+  const content = asRecord(record.content);
+  const indexed = asRecord(content.indexedStructured);
+  const dates = Array.isArray(indexed.date) ? indexed.date : [];
+  return stringOrNull(dates[0]);
+}
+function extractMedium(record: Record<string, unknown>): string | null {
+  const content = asRecord(record.content);
+  const freeText = asRecord(content.freetext);
+  const descriptions = Array.isArray(freeText.physicalDescription) ? freeText.physicalDescription : [];
+  for (const item of descriptions) {
+    const value = asRecord(item);
+    const label = stringOrNull(value.label)?.toLowerCase();
+    if (label === "medium" || label === "physical description") return stringOrNull(value.content);
+  }
+  return null;
+}
+function asRecord(value: unknown): Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value) ? value as Record<string, unknown> : {};
 }
 function stringOrNull(value: unknown): string | null { return typeof value === "string" && value.trim() ? value : null; }
 function emptyEvidence() { return { vision_text_match: "UNAVAILABLE", artist_match: "UNAVAILABLE", title_match: "UNAVAILABLE", date_match: "UNAVAILABLE", medium_match: "UNAVAILABLE", image_similarity: "UNAVAILABLE" } as const; }
