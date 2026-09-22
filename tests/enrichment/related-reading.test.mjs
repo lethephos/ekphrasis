@@ -22,3 +22,17 @@ test('related reading keeps first qualifying external links in article order and
 test('related reading returns an empty array when no qualifying links exist', () => {
   assert.deepEqual(extractRelatedReading({ externalLinks: [{ title: 'X', url: 'https://en.wikipedia.org/wiki/X' }] }), []);
 });
+
+
+test('Wikipedia client exposes article external links for related reading', async () => {
+  const { createWikipediaClient } = await import('../../lib/enrichment/wikipedia.js');
+  const client = createWikipediaClient({
+    fetchImpl: async (url) => {
+      const action = new URL(url).searchParams.get('action');
+      if (action === 'parse') return { ok: true, json: async () => ({ parse: { externallinks: ['https://www.metmuseum.org/a', 'https://en.wikipedia.org/wiki/X'] } }) };
+      return { ok: true, json: async () => ({ title: 'Work', extract: 'Summary', content_urls: { desktop: { page: 'https://en.wikipedia.org/wiki/Work' } } }) };
+    },
+  });
+  const result = await client.externalLinks('Work');
+  assert.deepEqual(result, ['https://www.metmuseum.org/a', 'https://en.wikipedia.org/wiki/X']);
+});
