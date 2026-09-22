@@ -10,7 +10,7 @@ import { searchMuseums } from "../museums/search";
 import { equivalentDate, equivalentText } from "../matching/normalize";
 import { scoreCandidates } from "../matching/score";
 import { selectCanonicalCandidate } from "../matching/select";
-import type { ClipEncoder, ClipIndex, QdrantAdapter } from "../clip/types";
+import type { ClipEncoder, ClipIndex, ClipCandidateRef, QdrantAdapter } from "../clip/types";
 import { retrieveFallbackCandidates } from "../clip/fallback";
 import { fetchWikipedia } from "../enrichment/wikipedia";
 import { fetchWikidataFacts } from "../enrichment/wikidata";
@@ -28,7 +28,12 @@ export interface IdentifyDeps {
   normalize?: (upload: ValidatedUpload) => Promise<NormalizedImage>;
   vision?: VisionAdapter;
   museums?: MuseumAdapter[];
-  clip?: { encoder: ClipEncoder; qdrant: QdrantAdapter; index: ClipIndex };
+  clip?: {
+    encoder: ClipEncoder;
+    qdrant: QdrantAdapter;
+    index: ClipIndex;
+    hydrate?: (refs: ClipCandidateRef[]) => Promise<ArtworkCandidate[]>;
+  };
 }
 
 function anyTextMatch(value: string | null, queries: string[]): boolean {
@@ -69,6 +74,17 @@ async function enrich(candidate: ArtworkCandidate): Promise<{ context: string | 
   }
 }
 
+async function hydrateClipRefs(
+  refs: ClipCandidateRef[],
+  deps: IdentifyDeps
+): Promise<ArtworkCandidate[]> {
+  const embedded = refs.flatMap(ref => ref.candidate ? [ref.candidate] : []);
+  if (embedded.length === refs.length || !deps.clip?.hydrate) return embedded;
+
+  const hydrated = await deps.clip.hydrate(refs);
+  return [...embedded, ...hydrated];
+}
+
 export async function identifyImage(request: IdentifyRequest, deps: IdentifyDeps): Promise<IdentificationResult> {
   const rate = await deps.limiter.check(request.address);
   if (!rate.allowed) return { state: "ERROR", error: "PROCESSING_FAILED" };
@@ -105,7 +121,7 @@ export async function identifyImage(request: IdentifyRequest, deps: IdentifyDeps
           deps.clip.index,
           deps.clip.encoder,
           deps.clip.qdrant,
-          async refs => refs.flatMap(ref => ref.candidate ? [ref.candidate] : [])
+          refs => hydrateClipRefs(refs, deps)
         );
         candidates = evidenceCandidates(fallback, queries);
         selection = selectCanonicalCandidate(scoreCandidates(candidates), ["met", "rijksmuseum", "aic", "smithsonian"]);
