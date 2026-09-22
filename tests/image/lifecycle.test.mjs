@@ -7,11 +7,10 @@ test('cleans the temporary resource after successful processing', async () => {
   const result = await withImageLifecycle({
     originalBytes: new Uint8Array([1, 2, 3]),
     process: async ({ cleanup }) => {
-      const value = await cleanup(() => { cleaned = true; });
-      return value ?? 'ok';
+      await cleanup(() => { cleaned = true; });
+      return 'ok';
     },
   });
-
   assert.equal(result, 'ok');
   assert.equal(cleaned, true);
 });
