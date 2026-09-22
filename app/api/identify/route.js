@@ -20,6 +20,7 @@ export async function POST(request) {
       if (!file || typeof file.arrayBuffer !== 'function') {
         return Response.json({ status: 'error', code: 'INVALID_INPUT' }, { status: 400 });
       }
+      if (typeof file.size === 'number' && file.size > 10 * 1024 * 1024) throw new Error('UPLOAD_TOO_LARGE');
       bytes = new Uint8Array(await file.arrayBuffer());
     } else {
       bytes = await readRequestBytes(request);
