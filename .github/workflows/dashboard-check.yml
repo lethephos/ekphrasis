@@ -3,13 +3,29 @@ on:
   push:
     branches:
       - feature/github-pages-dashboard
+  workflow_dispatch:
+permissions:
+  contents: read
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: node --check site/app.js
-      - run: node --check site/data/demo-run.js
-      - run: '! grep -Rni --exclude-dir=.git shazam README.md site docs'
-      - run: grep -q 'style: "Post-Impressionism"' site/data/demo-run.js
-      - run: grep -q 'styleSource: "wikipedia"' site/data/demo-run.js
+      - name: Validate JavaScript syntax
+        run: |
+          set -e
+          find app lib site tests -name '*.js' -o -name '*.mjs' | sort | while read -r file; do
+            node --check "$file"
+          done
+      - name: Validate dashboard invariants
+        run: node tests/dashboard-invariants.mjs
+      - name: Verify project copy cleanup
+        run: |
+          if grep -Rni --exclude-dir=.git --exclude-dir=node_modules 'shazam' README.md site docs; then
+            echo "Unexpected third-party brand reference found."
+            exit 1
+          fi
+      - name: Verify sourced style fixture
+        run: |
+          grep -q 'style: "Post-Impressionism"' site/data/demo-run.js
+          grep -q 'styleSource: "wikipedia"' site/data/demo-run.js
