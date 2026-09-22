@@ -16,7 +16,7 @@ test('promotes only a collection matching the manifest contract', async () => {
     client: {
       async count(collection) { calls.push(['count', collection]); return { count: 4 }; },
       async getCollection(collection) { calls.push(['get', collection]); return { config: { params: { vectors: { size: 512 } } } }; },
-      async setAlias(alias, collection) { calls.push(['alias', alias, collection]); },
+      async switchAlias(alias, collection) { calls.push(['alias', alias, collection]); },
     },
     requiredSources: ['The Met', 'Rijksmuseum', 'AIC', 'Smithsonian'],
     alias: 'ekphrasis-clip-current',
