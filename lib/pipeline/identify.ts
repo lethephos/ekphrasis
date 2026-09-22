@@ -79,8 +79,12 @@ export async function identifyImage(request: IdentifyRequest, deps: IdentifyDeps
 
   const originalBytes = new Uint8Array(await request.file.arrayBuffer());
   const hash = await sha256(originalBytes);
-  const cached = await deps.cache.get(hash);
-  if (cached) return cached;
+  try {
+    const cached = await deps.cache.get(hash);
+    if (cached) return cached;
+  } catch {
+    // Cache is an optimization; recognition must remain available if it is down.
+  }
 
   try {
     const upload = await (deps.validate ?? validateUpload)(request.file);
@@ -127,7 +131,11 @@ export async function identifyImage(request: IdentifyRequest, deps: IdentifyDeps
           unavailable_sources: museumResult.unavailableSources
         };
 
-    await deps.cache.set(hash, result);
+    try {
+      await deps.cache.set(hash, result);
+    } catch {
+      // Cache write failures do not invalidate an otherwise valid recognition result.
+    }
     return result;
   } catch (error) {
     const result: IdentificationResult =
