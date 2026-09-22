@@ -76,6 +76,14 @@ export const demoRun = {
       score: 0.31,
     },
   ],
+  additionalSources: [
+    { name: "Victoria and Albert Museum", short: "V&A", tier: "extended", status: "not-queried", note: "Secondary museum candidate source" },
+    { name: "National Gallery of Art", short: "NGA", tier: "extended", status: "not-queried", note: "Secondary museum candidate source" },
+    { name: "Cleveland Museum of Art", short: "CMA", tier: "extended", status: "not-queried", note: "Secondary museum candidate source" },
+    { name: "Harvard Art Museums", short: "HAM", tier: "extended", status: "not-queried", note: "Secondary museum candidate source" },
+    { name: "Europeana", short: "EU", tier: "extended", status: "not-queried", note: "Cross-collection discovery source" },
+    { name: "Wikidata / Wikipedia", short: "ENRICH", tier: "enrichment", status: "not-queried", note: "Enrichment only · not a canonical museum source" },
+  ],
   match: {
     confidence: "high",
     score: 0.96,
