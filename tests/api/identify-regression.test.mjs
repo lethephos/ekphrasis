@@ -56,3 +56,18 @@ test('identify pipeline treats individual museum failures as degraded, not total
   const result = await pipeline.identify(new Uint8Array([1]), { clientKey: 'ip' });
   assert.equal(result.status, 'match');
 });
+
+
+test('identify pipeline marks a match as degraded when a museum provider failed', async () => {
+  const pipeline = createIdentifyPipeline({
+    validate: async () => ({ format: 'jpeg', byteLength: 1 }), hash: async () => 'd',
+    cache: { get: async () => null, set: async () => {} },
+    rateLimiter: { check: async () => ({ allowed: true, remaining: 9 }) },
+    normalize: async (bytes) => ({ bytes }), vision: { detect: async () => ({ signals: [{ value: 'artist', type: 'artist' }] }) },
+    museums: [{ search: async () => { throw new Error('MUSEUM_TIMEOUT'); } }, { search: async () => [{ institution: 'A', objectId: '1', title: 'Work', artist: 'artist', imageUrl: 'https://x', artworkUrl: 'https://x', license: 'unknown' }] }],
+    score: (q, c) => ({ candidate: c, evidence: { artist_match: 'MATCH' }, score: 1 }),
+    selectCanonical: (items) => items[0], gate: () => ({ status: 'match', confidence: 'high', useVisualFallback: false }),
+  });
+  const result = await pipeline.identify(new Uint8Array([1]), { clientKey: 'ip' });
+  assert.equal(result.diagnostics.degraded, true);
+});
