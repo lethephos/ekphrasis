@@ -44,7 +44,7 @@ describe("identification pipeline", () => {
         limiter: { check: async () => ({ allowed: true }) },
         validate: async () => ({ bytes: Buffer.from("image"), format: "jpeg", width: 1, height: 1 }),
         normalize: async upload => ({ bytes: upload.bytes, mimeType: "image/jpeg", width: 1, height: 1 }),
-        vision: { detect: async () => ({ webDetection: { webEntities: [{ description: "Unknown" }] } }) },
+        vision: { detect: async () => ({ webDetection: { webEntities: [{ description: "Example" }, { description: "Artist" }] } }) },
         museums: [{
           id: "met",
           name: "The Met",
@@ -58,7 +58,7 @@ describe("identification pipeline", () => {
             expect(refs.map(ref => ref.artworkId)).toEqual(["met:123"]);
             return [{
               source: { id: "met", name: "The Met", image_url: null, url: null },
-              artwork: { title: "Unknown", artist: "Unknown Artist", year: null, medium: null, style: null },
+              artwork: { title: "Example", artist: "Artist", year: null, medium: null, style: null },
               evidence: {
                 vision_text_match: "UNAVAILABLE",
                 artist_match: "UNAVAILABLE",
@@ -81,8 +81,7 @@ describe("identification pipeline", () => {
       { file: new File([new Uint8Array([1])], "x.jpg", { type: "image/jpeg" }), address: "test" },
       {
         cache: { get: async () => cached, set: async () => {} },
-        limiter: { check: async () => ({ allowed: true }) },
-        validate: async () => { throw new Error("should not run"); }
+        limiter: { check: async () => { throw new Error("should not run"); } }
       }
     );
     expect(result).toEqual(cached);
