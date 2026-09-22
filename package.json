@@ -13,7 +13,9 @@
   "dependencies": {
     "next": "^15.5.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "sharp": "^0.34.3",
+    "heic-convert": "^2.1.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.8.0",
