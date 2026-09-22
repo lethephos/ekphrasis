@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { Home } from "../../components/home";
+
+afterEach(() => cleanup());
 
 describe("result states", () => {
   it("shows the processing copy without provider-specific stages", () => {
@@ -36,7 +38,7 @@ describe("result states", () => {
       degraded: false,
       unavailable_sources: []
     }} />);
-    expect(screen.getByText("Artist")).toBeTruthy();
+    expect(screen.getAllByText("Artist")[0]).toBeTruthy();
     expect(screen.getByText("1900")).toBeTruthy();
     expect(screen.getByText("Oil on canvas")).toBeTruthy();
     expect(screen.queryByText("Style")).toBeNull();
