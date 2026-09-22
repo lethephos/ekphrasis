@@ -35,7 +35,7 @@ const result = await buildVisualIndex({
 });
 const promotion = createQdrantPromotion({
   client: admin,
-  requiredSources: ['The Met', 'Rijksmuseum', 'Art Institute of Chicago', 'Smithsonian'],
+  requiredSources: ['The Metropolitan Museum of Art', 'Rijksmuseum', 'Art Institute of Chicago', 'Smithsonian'],
   alias: process.env.QDRANT_ALIAS || 'ekphrasis-clip-current',
 });
 await promotion.promote(result);
