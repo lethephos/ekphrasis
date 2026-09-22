@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { identifyImage } from "../../lib/pipeline/identify";
+import { identifyImage } from "../../../lib/pipeline/identify";
 
 describe("identification pipeline", () => {
   it("returns a cached result without invoking providers", async () => {
