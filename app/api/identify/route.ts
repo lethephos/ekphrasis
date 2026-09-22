@@ -1,14 +1,16 @@
 import { NextResponse } from "next/server";
 import { identifyImage } from "../../../lib/pipeline/identify";
 import { UpstashResultCache } from "../../../lib/cache/upstash";
-import { SlidingWindowRateLimiter } from "../../../lib/rate-limit/rate-limit";
+import { SlidingWindowRateLimiter, createRequestIdentity } from "../../../lib/rate-limit/rate-limit";
 import { UpstashRateLimitStore } from "../../../lib/rate-limit/upstash";
-import { createRequestIdentity } from "../../../lib/rate-limit/rate-limit";
 import { GoogleVisionAdapter } from "../../../lib/vision/google";
 import { MetAdapter } from "../../../lib/museums/met";
 import { RijksmuseumAdapter } from "../../../lib/museums/rijksmuseum";
 import { ArticAdapter } from "../../../lib/museums/artic";
 import { SmithsonianAdapter } from "../../../lib/museums/smithsonian";
+import { HttpClipEncoder } from "../../../lib/clip/http";
+import { QdrantRuntimeAdapter } from "../../../lib/clip/qdrant";
+import clipIndex from "../../../data/clip/index-version.json";
 
 const limiter = new SlidingWindowRateLimiter(new UpstashRateLimitStore());
 
@@ -19,8 +21,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ state: "ERROR", error: "INVALID_IMAGE" }, { status: 400 });
   }
 
+  const secret = process.env.RATE_LIMIT_HMAC_SECRET;
+  if (!secret) {
+    return NextResponse.json({ state: "ERROR", error: "PROCESSING_FAILED" }, { status: 503 });
+  }
+
   const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  const identity = await createRequestIdentity(forwarded, process.env.RATE_LIMIT_HMAC_SECRET ?? "development-only-secret");
+  const identity = await createRequestIdentity(forwarded, secret);
   const rate = await limiter.check(identity);
   if (!rate.allowed) {
     return NextResponse.json(
@@ -29,13 +36,26 @@ export async function POST(request: Request) {
     );
   }
 
+  const clipConfigured = Boolean(
+    process.env.CLIP_EMBEDDING_URL &&
+    process.env.QDRANT_URL &&
+    process.env.QDRANT_API_KEY
+  );
+
   const result = await identifyImage(
     { file, address: identity },
     {
       cache: new UpstashResultCache(),
       limiter: { check: async () => ({ allowed: true }) },
       vision: new GoogleVisionAdapter(),
-      museums: [new MetAdapter(), new RijksmuseumAdapter(), new ArticAdapter(), new SmithsonianAdapter()]
+      museums: [new MetAdapter(), new RijksmuseumAdapter(), new ArticAdapter(), new SmithsonianAdapter()],
+      clip: clipConfigured
+        ? {
+            encoder: new HttpClipEncoder(),
+            qdrant: new QdrantRuntimeAdapter(),
+            index: clipIndex
+          }
+        : undefined
     }
   );
 
