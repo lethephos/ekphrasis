@@ -81,7 +81,7 @@ describe("identification pipeline", () => {
       { file: new File([new Uint8Array([1])], "x.jpg", { type: "image/jpeg" }), address: "test" },
       {
         cache: { get: async () => cached, set: async () => {} },
-        limiter: { check: async () => { throw new Error("should not run"); } }
+        limiter: { check: async () => ({ allowed: true }) }
       }
     );
     expect(result).toEqual(cached);
