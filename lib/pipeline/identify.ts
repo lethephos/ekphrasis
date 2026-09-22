@@ -36,26 +36,48 @@ export interface IdentifyDeps {
   };
 }
 
-function anyTextMatch(value: string | null, queries: string[]): boolean {
-  return Boolean(value && queries.some(query => equivalentText(value, query)));
+function matchingQueries(value: string | null, queries: string[], predicate: (value: string, query: string) => boolean): string[] {
+  if (!value) return [];
+  return queries.filter(query => predicate(value, query));
 }
 
-function anyDateMatch(value: string | null, queries: string[]): boolean {
-  return Boolean(value && queries.some(query => /^\s*(?:c\.?\s*)?\d{4}\s*$/.test(query) && equivalentDate(value, query)));
+function textMatches(value: string | null, queries: string[]): string[] {
+  return matchingQueries(value, queries, equivalentText);
+}
+
+function dateMatches(value: string | null, queries: string[]): string[] {
+  return matchingQueries(
+    value,
+    queries.filter(query => /^\s*(?:c\.?\s*)?\d{4}\s*$/.test(query)),
+    equivalentDate
+  );
 }
 
 export function evidenceCandidates(candidates: ArtworkCandidate[], queries: string[]): ArtworkCandidate[] {
-  return candidates.map(candidate => ({
-    ...candidate,
-    evidence: {
-      vision_text_match: "UNAVAILABLE",
-      title_match: anyTextMatch(candidate.artwork.title, queries) ? "MATCH" : "UNAVAILABLE",
-      artist_match: anyTextMatch(candidate.artwork.artist, queries) ? "MATCH" : "UNAVAILABLE",
-      date_match: anyDateMatch(candidate.artwork.year, queries) ? "MATCH" : "UNAVAILABLE",
-      medium_match: anyTextMatch(candidate.artwork.medium, queries) ? "MATCH" : "UNAVAILABLE",
-      image_similarity: "UNAVAILABLE"
-    }
-  }));
+  return candidates.map(candidate => {
+    const titleSupport = textMatches(candidate.artwork.title, queries);
+    const artistSupport = textMatches(candidate.artwork.artist, queries);
+    const dateSupport = dateMatches(candidate.artwork.year, queries);
+    const mediumSupport = textMatches(candidate.artwork.medium, queries);
+
+    return {
+      ...candidate,
+      evidence: {
+        vision_text_match: "UNAVAILABLE",
+        title_match: titleSupport.length ? "MATCH" : "UNAVAILABLE",
+        artist_match: artistSupport.length ? "MATCH" : "UNAVAILABLE",
+        date_match: dateSupport.length ? "MATCH" : "UNAVAILABLE",
+        medium_match: mediumSupport.length ? "MATCH" : "UNAVAILABLE",
+        image_similarity: "UNAVAILABLE"
+      },
+      evidence_support: {
+        title_match: titleSupport,
+        artist_match: artistSupport,
+        date_match: dateSupport,
+        medium_match: mediumSupport
+      }
+    };
+  });
 }
 
 async function enrich(candidate: ArtworkCandidate): Promise<{ context: string | null; detail: string | null; related_reading: Array<{ title: string; url: string }> }> {
