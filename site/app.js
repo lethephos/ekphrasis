@@ -1,4 +1,4 @@
-import { demoRun } from "./data/demo-run.js?v=source-coverage-2";
+import { demoRun } from "./data/demo-run.js?v=style-fallback-1";
 
 const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({
   "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
@@ -126,6 +126,11 @@ function renderFallback() {
 function renderResult() {
   const r = demoRun.result;
   const a = r.artwork;
+  const style = a.style;
+  const styleSource = a.styleSource;
+  const styleMarkup = style
+    ? `<div><span>Style</span><strong>${esc(style)}</strong><small class="metadata-source">${esc(styleSource === "wikipedia" ? "Wikipedia" : "Museum source")}</small></div>`
+    : `<div><span>Style</span><strong>Not supplied by museum or Wikipedia</strong></div>`;
   el("result").innerHTML = `
     <div class="section-head"><div><div class="eyebrow">05 / Presentation</div><h2 class="section-title">The result</h2></div><div class="section-note">Provider-independent public model</div></div>
     <div class="result-layout">
@@ -142,7 +147,7 @@ function renderResult() {
           <div><span>Artist</span><strong>${esc(a.artist)}</strong></div>
           <div><span>Year</span><strong>${esc(a.year)}</strong></div>
           <div><span>Medium</span><strong>${esc(a.medium)}</strong></div>
-          ${a.style ? `<div><span>Style</span><strong>${esc(a.style)}</strong></div>` : `<div><span>Style</span><strong>—</strong></div>`}
+          ${styleMarkup}
         </div>
         <div class="copy-block"><h3>The Context</h3><p>${esc(r.context)}</p></div>
         <div class="copy-block"><h3>The Detail</h3><p>${esc(r.detail)}</p></div>
