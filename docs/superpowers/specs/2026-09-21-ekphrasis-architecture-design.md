@@ -240,7 +240,21 @@ Raw technical errors are not exposed to the UI.
 
 Temporary errors offer retry. Invalid/unsupported input requires a new or corrected file.
 
-Per-source timeout budgets and exact provider-failure classification remain implementation questions.
+Each external provider has an independent timeout budget. Provider failures are normalized internally to:
+
+```
+TIMEOUT
+RATE_LIMITED
+AUTH
+NOT_FOUND
+INVALID_RESPONSE
+NETWORK
+PROVIDER_ERROR
+```
+
+These classes are consumed by pipeline policy rather than exposed directly to users. A provider failure is isolated by default: the pipeline may continue with remaining sources, enter degraded operation, invoke fallback, or return `API_UNAVAILABLE` when the failure prevents meaningful identification. Vision remains critical under the rules above.
+
+Exact timeout durations are implementation-planning parameters; they are not architectural contracts.
 
 ## 8. Enrichment and provenance
 
@@ -451,10 +465,14 @@ All external services are accessed through adapters that isolate credentials, re
 ### Diagnostics
 Internal diagnostics may include unavailable sources, degraded status, provider failure class, and ambiguity. User-facing responses never expose secrets, raw provider responses, or internal configuration.
 
-### Request-volume / rate-limiting strategy — OPEN QUESTION
+### Request-volume / rate-limiting strategy
 The SHA-256 cache protects against repeated submissions of the same image. It does not protect against many different images.
 
-A separate request-volume protection strategy is therefore required for the unauthenticated MVP and must account for Vercel runtime behavior. The concrete mechanism is intentionally deferred to implementation planning.
+The unauthenticated MVP therefore requires a separate request-volume protection layer on `POST /api/identify`. Requests rejected by this layer return HTTP `429` before the recognition pipeline starts. The mechanism must be compatible with Vercel runtime behavior and must not require user accounts.
+
+This is cost-control and basic abuse protection, not an authentication or comprehensive anti-abuse system. Provider failures are not treated as user-originated rate-limit violations.
+
+The concrete mechanism, identity key, window/algorithm, and exact thresholds are implementation-planning parameters.
 
 ## 13. Hosting and deployment
 
@@ -538,15 +556,19 @@ UX flow in Miro:
 
 `upload → processing → result card → no-match state / error state`
 
-## 16. Open questions for implementation planning
+## 16. Implementation-planning decisions
 
-1. Per-source timeout budgets and failure classification.
-2. Exact normal/degraded cache TTLs.
-3. Concrete cache storage implementation.
-4. Exact input/resource limits beyond 10 MB.
-5. Concrete request-volume/rate-limiting strategy.
-6. Exact CLIP embedding generation, Qdrant indexing, and maintenance workflow.
-7. **Low-priority future candidate — Smarthistory integration.** Smarthistory is explicitly not part of the current enrichment architecture or implementation scope. Revisit only as a future candidate if API availability, programmatic-access permissions, and sufficiently reliable artwork-level matching can be confirmed. No scraping or access-restriction bypass is permitted.
+The following decisions are architectural contracts; their exact numeric/configuration values remain implementation-planning parameters:
+
+1. **Provider resilience:** independent per-provider timeouts with normalized failure classes (`TIMEOUT`, `RATE_LIMITED`, `AUTH`, `NOT_FOUND`, `INVALID_RESPONSE`, `NETWORK`, `PROVIDER_ERROR`). Pipeline policy determines continue/degrade/fallback/`API_UNAVAILABLE`.
+2. **Cache policy:** normal and degraded result classes have separate TTLs; degraded is shorter; `NO_MATCH` may be cached; `API_UNAVAILABLE` is not cached as a normal identification result.
+3. **Cache storage:** Redis-compatible storage, recommended MVP implementation Upstash Redis. The pipeline depends on a cache abstraction rather than a provider SDK.
+4. **Input/resource protection:** 10 MB upload ceiling plus decoded pixel/dimension protection and bounded normalization/processing resources.
+5. **Request-volume protection:** unauthenticated `POST /api/identify` is rate-limited before pipeline execution; exact algorithm, identity key, window, and thresholds are implementation details.
+6. **CLIP/Qdrant:** runtime retrieval is fallback-only and uses the same evidence gate; embedding generation/index maintenance is offline/batch work with a versioned index.
+7. **Smarthistory:** future-only; no current dependency, scraping, or access-control bypass.
+
+These decisions replace the corresponding open questions from the earlier architectural draft. Exact timeout values, TTL durations, resource thresholds, rate-limit parameters, Redis client details, and batch-index tooling belong in the implementation plan.
 
 ## 17. Approval gate
 
