@@ -20,12 +20,14 @@ describe("identify API boundary", () => {
 
   it("does not initialize providers when the rate-limit secret is missing", async () => {
     delete process.env.RATE_LIMIT_HMAC_SECRET;
-    const form = new FormData();
-    form.append("image", new File([new Uint8Array([1])], "x.jpg", { type: "image/jpeg" }));
-    const response = await POST(new Request("http://localhost/api/identify", {
-      method: "POST",
-      body: form
-    }));
+    const response = await POST({
+      formData: async () => ({
+        get: () => ({
+          size: 1,
+          arrayBuffer: async () => new ArrayBuffer(1)
+        })
+      })
+    } as unknown as Request);
     expect(response.status).toBe(503);
     expect(await response.json()).toEqual({ state: "ERROR", error: "PROCESSING_FAILED" });
   });
