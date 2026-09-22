@@ -2,7 +2,7 @@ import type { IdentificationResult } from "../types";
 
 export type CacheClass = "normal" | "degraded" | "uncacheable";
 export type CachePolicyInput =
-  | { state: "ERROR" }
+  | { state: "ERROR"; error?: string }
   | { state: "MATCH" | "NO_MATCH"; degraded: boolean };
 
 export function cacheClassFor(result: CachePolicyInput): CacheClass {
