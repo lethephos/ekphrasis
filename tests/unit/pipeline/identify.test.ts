@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { IdentificationResult } from "../../../lib/types";
 import { evidenceCandidates, identifyImage } from "../../../lib/pipeline/identify";
 
 describe("identification pipeline", () => {
@@ -33,7 +34,7 @@ describe("identification pipeline", () => {
   });
 
   it("returns a cached result without invoking providers", async () => {
-    const cached = { state: "NO_MATCH", reason: "insufficient_evidence", degraded: false, unavailable_sources: [] };
+    const cached: IdentificationResult = { state: "NO_MATCH", reason: "insufficient_evidence", degraded: false, unavailable_sources: [] };
     const result = await identifyImage(
       { file: new File([new Uint8Array([1])], "x.jpg", { type: "image/jpeg" }), address: "test" },
       {
