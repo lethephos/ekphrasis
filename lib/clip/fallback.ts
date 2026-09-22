@@ -1,5 +1,6 @@
 import type { ArtworkCandidate } from "../types";
 import type { ClipCandidateRef, ClipIndex, ClipEncoder, QdrantAdapter } from "./types";
+export type { ClipIndex } from "./types";
 
 export function shouldUseClipFallback(input: { sufficient: boolean }): boolean {
   return !input.sufficient;
