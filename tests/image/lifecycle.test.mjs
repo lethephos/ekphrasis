@@ -1,31 +1,34 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { access } from 'node:fs/promises';
 import { withImageLifecycle } from '../../lib/image/lifecycle.js';
 
 test('cleans the temporary resource after successful processing', async () => {
-  let cleaned = false;
+  let originalPath;
   const result = await withImageLifecycle({
     originalBytes: new Uint8Array([1, 2, 3]),
-    process: async ({ cleanup }) => {
-      await cleanup(() => { cleaned = true; });
+    process: async (resource) => {
+      originalPath = resource.originalPath;
+      await access(resource.originalPath);
       return 'ok';
     },
   });
   assert.equal(result, 'ok');
-  assert.equal(cleaned, true);
+  await assert.rejects(access(originalPath));
 });
 
 test('cleans the temporary resource when processing throws', async () => {
-  let cleaned = false;
+  let originalPath;
   await assert.rejects(
     withImageLifecycle({
       originalBytes: new Uint8Array([1, 2, 3]),
-      process: async ({ cleanup }) => {
-        await cleanup(() => { cleaned = true; });
+      process: async (resource) => {
+        originalPath = resource.originalPath;
+        await access(resource.originalPath);
         throw new Error('processing failed');
       },
     }),
     /processing failed/,
   );
-  assert.equal(cleaned, true);
+  await assert.rejects(access(originalPath));
 });
