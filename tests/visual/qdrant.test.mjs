@@ -37,5 +37,6 @@ test('Qdrant admin client uses the documented collection, point, count, and alia
   assert.equal(calls[3][0], 'https://qdrant.example/collections/ekphrasis-clip-2026-09-22');
   assert.equal(calls[3][1], 'GET');
   assert.equal(calls[4][0], 'https://qdrant.example/collections/aliases');
-  assert.equal(JSON.parse(calls[4][2]).actions[0].create_alias.alias_name, 'ekphrasis-clip-current');
+  const aliasActions = JSON.parse(calls[4][2]).actions;
+  assert.deepEqual(aliasActions, [{ create_alias: { alias_name: 'ekphrasis-clip-current', collection_name: 'ekphrasis-clip-2026-09-22' } }]);
 });
