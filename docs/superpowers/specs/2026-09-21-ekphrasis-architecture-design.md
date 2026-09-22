@@ -457,7 +457,9 @@ Provider credentials live only in server-side environment variables. No `.env` o
 ### Input/resource protection
 Server-side validation is authoritative for MIME/type, size, decoding, supported formats, and HEIC handling. Do not trust extension or client-provided Content-Type. Individual requests must have bounded resource consumption.
 
-Exact limits beyond the baseline 10 MB input boundary remain an implementation-planning question.
+The baseline upload limit is 10 MB. The implementation must also enforce a decoded-image pixel/dimension guard so a highly compressed image cannot bypass resource protection through decompression amplification. HEIC/HEIF normalization occurs server-side within the same bounded request budget.
+
+Unsupported format, malformed image data, or resource-limit violations are rejected before provider calls. The exact decoded pixel/dimension threshold and any lower-level runtime memory/CPU guards are implementation-planning parameters. No client-controlled processing parameters may expand those limits.
 
 ### External API isolation
 All external services are accessed through adapters that isolate credentials, request formats, and provider failures.
@@ -473,6 +475,52 @@ The unauthenticated MVP therefore requires a separate request-volume protection 
 This is cost-control and basic abuse protection, not an authentication or comprehensive anti-abuse system. Provider failures are not treated as user-originated rate-limit violations.
 
 The concrete mechanism, identity key, window/algorithm, and exact thresholds are implementation-planning parameters.
+
+## 13. CLIP/Qdrant runtime and index maintenance
+
+CLIP/Qdrant has two deliberately separate responsibilities.
+
+**Runtime fallback:**
+
+```
+Vision + Museum Search
+        ↓
+evidence scoring
+        ↓
+sufficient?
+   yes → result
+   no  → CLIP embedding → Qdrant
+                         ↓
+                   candidate artwork IDs
+                         ↓
+                   same evidence gate
+                         ↓
+                       result
+```
+
+CLIP is a candidate-retrieval mechanism, not an independent identity authority. Candidates returned by Qdrant must pass the same metadata/evidence gate and deterministic canonical-source rules as museum-search candidates.
+
+**Index maintenance:**
+
+```
+permitted museum artwork data
+        ↓
+canonical normalization
+        ↓
+permitted artwork images
+        ↓
+batch CLIP embeddings
+        ↓
+versioned Qdrant collection/index
+```
+
+Embedding generation and Qdrant indexing are offline/batch maintenance work, not part of the normal request path. The runtime must identify the index version used for a request. Updating the index must not create a required live dependency on the optional external droplet.
+
+The optional external droplet may be used for batch embedding generation/maintenance only. The MVP runtime must remain deployable and operable without it.
+
+### Future enrichment candidates
+
+Smarthistory is explicitly future-only. It is not a current enrichment dependency and does not participate in identification. Any future integration requires confirmed programmatic-access permissions and reliable artwork-level linking. No scraping or access-restriction bypass is permitted.
 
 ## 13. Hosting and deployment
 
@@ -556,7 +604,7 @@ UX flow in Miro:
 
 `upload → processing → result card → no-match state / error state`
 
-## 16. Implementation-planning decisions
+## 17. Implementation-planning decisions
 
 The following decisions are architectural contracts; their exact numeric/configuration values remain implementation-planning parameters:
 
@@ -570,6 +618,6 @@ The following decisions are architectural contracts; their exact numeric/configu
 
 These decisions replace the corresponding open questions from the earlier architectural draft. Exact timeout values, TTL durations, resource thresholds, rate-limit parameters, Redis client details, and batch-index tooling belong in the implementation plan.
 
-## 17. Approval gate
+## 18. Approval gate
 
 This document is the architectural specification for Ekphrasis. Implementation planning and implementation begin only after the written specification has been reviewed and explicitly approved.
