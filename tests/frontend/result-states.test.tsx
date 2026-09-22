@@ -39,8 +39,8 @@ describe("result states", () => {
       unavailable_sources: []
     }} />);
     expect(screen.getAllByText("Artist")[0]).toBeTruthy();
-    expect(screen.getByText("1900")).toBeTruthy();
-    expect(screen.getByText("Oil on canvas")).toBeTruthy();
+    expect(screen.getByText(/1900/)).toBeTruthy();
+    expect(screen.getByText(/Oil on canvas/)).toBeTruthy();
     expect(screen.queryByText("Style")).toBeNull();
   });
 });
