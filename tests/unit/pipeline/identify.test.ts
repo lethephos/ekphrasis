@@ -44,16 +44,32 @@ describe("identification pipeline", () => {
         limiter: { check: async () => ({ allowed: true }) },
         validate: async () => ({ bytes: Buffer.from("image"), format: "jpeg", width: 1, height: 1 }),
         normalize: async upload => ({ bytes: upload.bytes, mimeType: "image/jpeg", width: 1, height: 1 }),
-        vision: { detect: async () => ({ webDetection: { webEntities: [{ description: "Example" }, { description: "Artist" }] } }) },
+        vision: { detect: async () => ({ webDetection: { webEntities: [{ description: "Unknown" }] } }) },
         museums: [{
           id: "met",
           name: "The Met",
-          search: async () => [{
-            source: { id: "met", name: "The Met", image_url: null, url: null },
-            artwork: { title: "Example", artist: "Artist", year: null, medium: null, style: null },
-            evidence: { vision_text_match: "UNAVAILABLE", artist_match: "UNAVAILABLE", title_match: "UNAVAILABLE", date_match: "UNAVAILABLE", medium_match: "UNAVAILABLE", image_similarity: "UNAVAILABLE" }
-          }]
-        }]
+          search: async () => []
+        }],
+        clip: {
+          index: { version: "v1" },
+          encoder: { embed: async () => [0.1, 0.2] },
+          qdrant: { search: async () => [{ artworkId: "met:123", score: 0.99 }] },
+          hydrate: async refs => {
+            expect(refs.map(ref => ref.artworkId)).toEqual(["met:123"]);
+            return [{
+              source: { id: "met", name: "The Met", image_url: null, url: null },
+              artwork: { title: "Unknown", artist: "Unknown Artist", year: null, medium: null, style: null },
+              evidence: {
+                vision_text_match: "UNAVAILABLE",
+                artist_match: "UNAVAILABLE",
+                title_match: "UNAVAILABLE",
+                date_match: "UNAVAILABLE",
+                medium_match: "UNAVAILABLE",
+                image_similarity: "UNAVAILABLE"
+              }
+            }];
+          }
+        }
       }
     );
     expect(result.state).toBe("MATCH");
