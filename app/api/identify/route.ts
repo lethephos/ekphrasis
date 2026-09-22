@@ -15,7 +15,7 @@ import clipIndex from "../../../data/clip/index-version.json";
 export async function POST(request: Request) {
   const form = await request.formData();
   const file = form.get("image");
-  if (!(file instanceof File)) {
+  if (!file || typeof file !== "object" || !("arrayBuffer" in file) || !("size" in file)) {
     return NextResponse.json({ state: "ERROR", error: "INVALID_IMAGE" }, { status: 400 });
   }
 
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
     );
 
     const result = await identifyImage(
-      { file, address: identity },
+      { file: file as File, address: identity },
       {
         cache: new UpstashResultCache(),
         limiter: { check: async () => ({ allowed: true }) },
