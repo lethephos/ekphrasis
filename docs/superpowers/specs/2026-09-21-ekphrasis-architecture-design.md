@@ -240,7 +240,21 @@ Raw technical errors are not exposed to the UI.
 
 Temporary errors offer retry. Invalid/unsupported input requires a new or corrected file.
 
-Per-source timeout budgets and exact provider-failure classification remain implementation questions.
+Each external provider has an independent timeout budget. Provider failures are normalized internally to:
+
+```
+TIMEOUT
+RATE_LIMITED
+AUTH
+NOT_FOUND
+INVALID_RESPONSE
+NETWORK
+PROVIDER_ERROR
+```
+
+These classes are consumed by pipeline policy rather than exposed directly to users. A provider failure is isolated by default: the pipeline may continue with remaining sources, enter degraded operation, invoke fallback, or return `API_UNAVAILABLE` when the failure prevents meaningful identification. Vision remains critical under the rules above.
+
+Exact timeout durations are implementation-planning parameters; they are not architectural contracts.
 
 ## 8. Enrichment and provenance
 
@@ -443,7 +457,9 @@ Provider credentials live only in server-side environment variables. No `.env` o
 ### Input/resource protection
 Server-side validation is authoritative for MIME/type, size, decoding, supported formats, and HEIC handling. Do not trust extension or client-provided Content-Type. Individual requests must have bounded resource consumption.
 
-Exact limits beyond the baseline 10 MB input boundary remain an implementation-planning question.
+The baseline upload limit is 10 MB. The implementation must also enforce a decoded-image pixel/dimension guard so a highly compressed image cannot bypass resource protection through decompression amplification. HEIC/HEIF normalization occurs server-side within the same bounded request budget.
+
+Unsupported format, malformed image data, or resource-limit violations are rejected before provider calls. The exact decoded pixel/dimension threshold and any lower-level runtime memory/CPU guards are implementation-planning parameters. No client-controlled processing parameters may expand those limits.
 
 ### External API isolation
 All external services are accessed through adapters that isolate credentials, request formats, and provider failures.
@@ -451,12 +467,62 @@ All external services are accessed through adapters that isolate credentials, re
 ### Diagnostics
 Internal diagnostics may include unavailable sources, degraded status, provider failure class, and ambiguity. User-facing responses never expose secrets, raw provider responses, or internal configuration.
 
-### Request-volume / rate-limiting strategy — OPEN QUESTION
+### Request-volume / rate-limiting strategy
 The SHA-256 cache protects against repeated submissions of the same image. It does not protect against many different images.
 
-A separate request-volume protection strategy is therefore required for the unauthenticated MVP and must account for Vercel runtime behavior. The concrete mechanism is intentionally deferred to implementation planning.
+The unauthenticated MVP therefore requires a separate request-volume protection layer on `POST /api/identify`. Requests rejected by this layer return HTTP `429` before the recognition pipeline starts. The mechanism must be compatible with Vercel runtime behavior and must not require user accounts.
 
-## 13. Hosting and deployment
+This is cost-control and basic abuse protection, not an authentication or comprehensive anti-abuse system. Provider failures are not treated as user-originated rate-limit violations.
+
+The concrete mechanism, identity key, window/algorithm, and exact thresholds are implementation-planning parameters.
+
+## 13. CLIP/Qdrant runtime and index maintenance
+
+CLIP/Qdrant has two deliberately separate responsibilities.
+
+**Runtime fallback:**
+
+```
+Vision + Museum Search
+        ↓
+evidence scoring
+        ↓
+sufficient?
+   yes → result
+   no  → CLIP embedding → Qdrant
+                         ↓
+                   candidate artwork IDs
+                         ↓
+                   same evidence gate
+                         ↓
+                       result
+```
+
+CLIP is a candidate-retrieval mechanism, not an independent identity authority. Candidates returned by Qdrant must pass the same metadata/evidence gate and deterministic canonical-source rules as museum-search candidates.
+
+**Index maintenance:**
+
+```
+permitted museum artwork data
+        ↓
+canonical normalization
+        ↓
+permitted artwork images
+        ↓
+batch CLIP embeddings
+        ↓
+versioned Qdrant collection/index
+```
+
+Embedding generation and Qdrant indexing are offline/batch maintenance work, not part of the normal request path. The runtime must identify the index version used for a request. Updating the index must not create a required live dependency on the optional external droplet.
+
+The optional external droplet may be used for batch embedding generation/maintenance only. The MVP runtime must remain deployable and operable without it.
+
+### Future enrichment candidates
+
+Smarthistory is explicitly future-only. It is not a current enrichment dependency and does not participate in identification. Any future integration requires confirmed programmatic-access permissions and reliable artwork-level linking. No scraping or access-restriction bypass is permitted.
+
+## 14. Hosting and deployment
 
 ```
 Vercel
@@ -473,7 +539,7 @@ The existing external droplet is an optional auxiliary compute escape hatch for 
 
 Railway is excluded from the architecture.
 
-## 14. Repository structure
+## 15. Repository structure
 
 ```
 ekphrasis/
@@ -513,7 +579,7 @@ Repository rules:
 - never commit `.env` or API keys;
 - `.env.example` contains placeholders only.
 
-## 15. Product scope boundaries
+## 16. Product scope boundaries
 
 MVP excludes:
 - authentication;
@@ -538,16 +604,20 @@ UX flow in Miro:
 
 `upload → processing → result card → no-match state / error state`
 
-## 16. Open questions for implementation planning
+## 17. Implementation-planning decisions
 
-1. Per-source timeout budgets and failure classification.
-2. Exact normal/degraded cache TTLs.
-3. Concrete cache storage implementation.
-4. Exact input/resource limits beyond 10 MB.
-5. Concrete request-volume/rate-limiting strategy.
-6. Exact CLIP embedding generation, Qdrant indexing, and maintenance workflow.
-7. **Low-priority future candidate — Smarthistory integration.** Smarthistory is explicitly not part of the current enrichment architecture or implementation scope. Revisit only as a future candidate if API availability, programmatic-access permissions, and sufficiently reliable artwork-level matching can be confirmed. No scraping or access-restriction bypass is permitted.
+The following decisions are architectural contracts; their exact numeric/configuration values remain implementation-planning parameters:
 
-## 17. Approval gate
+1. **Provider resilience:** independent per-provider timeouts with normalized failure classes (`TIMEOUT`, `RATE_LIMITED`, `AUTH`, `NOT_FOUND`, `INVALID_RESPONSE`, `NETWORK`, `PROVIDER_ERROR`). Pipeline policy determines continue/degrade/fallback/`API_UNAVAILABLE`.
+2. **Cache policy:** normal and degraded result classes have separate TTLs; degraded is shorter; `NO_MATCH` may be cached; `API_UNAVAILABLE` is not cached as a normal identification result.
+3. **Cache storage:** Redis-compatible storage, recommended MVP implementation Upstash Redis. The pipeline depends on a cache abstraction rather than a provider SDK.
+4. **Input/resource protection:** 10 MB upload ceiling plus decoded pixel/dimension protection and bounded normalization/processing resources.
+5. **Request-volume protection:** unauthenticated `POST /api/identify` is rate-limited before pipeline execution; exact algorithm, identity key, window, and thresholds are implementation details.
+6. **CLIP/Qdrant:** runtime retrieval is fallback-only and uses the same evidence gate; embedding generation/index maintenance is offline/batch work with a versioned index.
+7. **Smarthistory:** future-only; no current dependency, scraping, or access-control bypass.
+
+These decisions replace the corresponding open questions from the earlier architectural draft. Exact timeout values, TTL durations, resource thresholds, rate-limit parameters, Redis client details, and batch-index tooling belong in the implementation plan.
+
+## 18. Approval gate
 
 This document is the architectural specification for Ekphrasis. Implementation planning and implementation begin only after the written specification has been reviewed and explicitly approved.
