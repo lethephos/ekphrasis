@@ -85,7 +85,7 @@ test('identify pipeline can use visual fallback when metadata search yields no c
     museums: [{ search: async () => [] }],
     score: (query, candidate) => ({ candidate, evidence: { title_match: 'UNAVAILABLE' }, score: 0 }),
     selectCanonical: () => null,
-    gate: () => ({ status: 'no_match', confidence: 'low', useVisualFallback: true }),
+    gate: (item) => item?.candidate ? ({ status: 'match', confidence: 'high', useVisualFallback: false }) : ({ status: 'no_match', confidence: 'low', useVisualFallback: true }),
     visual: { resolve: async (_bytes, decision) => {
       visualCalled = decision.useVisualFallback === true;
       return { candidate: { institution: 'The Met', objectId: '1', title: 'Recovered', artist: 'Artist', year: '1900', medium: 'Oil', imageUrl: 'https://img', artworkUrl: 'https://art', license: 'unknown' }, similarity: 0.9, degraded: false };
