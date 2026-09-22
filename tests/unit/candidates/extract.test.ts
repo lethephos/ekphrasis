@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractSearchCandidates } from "../../lib/candidates/extract";
+import { extractSearchCandidates } from "../../../lib/candidates/extract";
 
 describe("Vision candidate extraction", () => {
   it("extracts unique artwork-oriented text candidates without declaring identity", () => {
