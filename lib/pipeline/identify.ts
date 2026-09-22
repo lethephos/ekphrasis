@@ -15,6 +15,7 @@ import { retrieveFallbackCandidates } from "../clip/fallback";
 import { fetchWikipedia } from "../enrichment/wikipedia";
 import { fetchWikidataFacts } from "../enrichment/wikidata";
 import { normalizeContext, normalizeDetail } from "../enrichment/normalize";
+import { extractRelatedReading } from "../enrichment/related-reading";
 import type { RateLimitDecision } from "../rate-limit/rate-limit";
 import { InputError, ProviderError } from "../errors";
 
@@ -52,16 +53,19 @@ export function evidenceCandidates(candidates: ArtworkCandidate[], queries: stri
   }));
 }
 
-async function enrich(candidate: ArtworkCandidate): Promise<{ context: string | null; detail: string | null }> {
+async function enrich(candidate: ArtworkCandidate): Promise<{ context: string | null; detail: string | null; related_reading: Array<{ title: string; url: string }> }> {
   try {
     const article = await fetchWikipedia(candidate.artwork.title ?? candidate.artwork.artist ?? "");
     const facts = await fetchWikidataFacts(candidate.artwork.title ?? candidate.artwork.artist ?? "");
     return {
       context: normalizeContext([...(article?.extract ? [article.extract] : []), ...facts]),
-      detail: normalizeDetail(facts)
+      detail: normalizeDetail(facts),
+      related_reading: extractRelatedReading(
+        (article?.externallinks ?? []).map(url => ({ title: new URL(url).hostname.replace(/^www\./, ""), url }))
+      )
     };
   } catch {
-    return { context: null, detail: null };
+    return { context: null, detail: null, related_reading: [] };
   }
 }
 
