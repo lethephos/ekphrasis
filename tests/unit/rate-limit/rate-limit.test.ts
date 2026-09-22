@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createRequestIdentity, type RateLimitStore, SlidingWindowRateLimiter } from "../../../lib/rate-limit/rate-limit";
+import { createRequestIdentity, type MemoryRateLimitStore, SlidingWindowRateLimiter } from "../../../lib/rate-limit/rate-limit";
 
 describe("request rate limiting", () => {
   it("creates a privacy-preserving identity from the trusted client address", async () => {
@@ -9,7 +9,7 @@ describe("request rate limiting", () => {
   });
 
   it("rejects after the configured minute threshold", async () => {
-    const store: RateLimitStore = new Map();
+    const store: MemoryRateLimitStore = new Map();
     const limiter = new SlidingWindowRateLimiter(store, () => 1_000);
     for (let i = 0; i < 5; i++) expect((await limiter.check("id")).allowed).toBe(true);
     expect((await limiter.check("id")).allowed).toBe(false);
