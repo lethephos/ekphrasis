@@ -73,6 +73,10 @@ export async function identifyImage(request: IdentifyRequest, deps: IdentifyDeps
   const rate = await deps.limiter.check(request.address);
   if (!rate.allowed) return { state: "ERROR", error: "PROCESSING_FAILED" };
 
+  if (request.file.size === 0 || request.file.size > 10 * 1024 * 1024) {
+    return { state: "ERROR", error: "UNSUPPORTED_INPUT" };
+  }
+
   const originalBytes = new Uint8Array(await request.file.arrayBuffer());
   const hash = await sha256(originalBytes);
   const cached = await deps.cache.get(hash);
