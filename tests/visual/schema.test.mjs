@@ -21,3 +21,13 @@ test('Qdrant filter targets museum/object identity only', () => {
     ],
   });
 });
+
+
+test('index manifest source counts must cover all four MVP museums', () => {
+  const manifest = {
+    collection: 'ekphrasis-v1', model: 'openai/clip-vit-base-patch32', dimensions: 512,
+    sources: ['The Metropolitan Museum of Art', 'Rijksmuseum', 'Art Institute of Chicago', 'Smithsonian'],
+    pointCount: 4,
+  };
+  assert.deepEqual(validateIndexManifest(manifest).sources, manifest.sources);
+});
