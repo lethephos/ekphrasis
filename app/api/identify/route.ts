@@ -5,6 +5,7 @@ import { identifyImage } from "../../../lib/pipeline/identify";
 import { UpstashResultCache } from "../../../lib/cache/upstash";
 import { SlidingWindowRateLimiter, createRequestIdentity } from "../../../lib/rate-limit/rate-limit";
 import { UpstashRateLimitStore } from "../../../lib/rate-limit/upstash";
+import { getRateLimitSecret } from "../../../lib/rate-limit/secret";
 import { HuggingFaceVisionAdapter } from "../../../lib/vision/huggingface";
 import { MetAdapter } from "../../../lib/museums/met";
 import { RijksmuseumAdapter } from "../../../lib/museums/rijksmuseum";
@@ -35,7 +36,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ state: "ERROR", error: "INVALID_IMAGE" }, { status: 400 });
   }
 
-  const secret = process.env.RATE_LIMIT_HMAC_SECRET;
+  const secret = getRateLimitSecret();
   if (!secret) {
     return NextResponse.json({ state: "ERROR", error: "PROCESSING_FAILED" }, { status: 503 });
   }
