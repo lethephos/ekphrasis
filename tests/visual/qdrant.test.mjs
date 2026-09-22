@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createQdrantClient } from '../../lib/visual/qdrant.js';
+import { createQdrantClient, createQdrantAdminClient } from '../../lib/visual/qdrant.js';
 
 test('Qdrant client is read-only and normalizes nearest-neighbor results', async () => {
   const client = createQdrantClient({
@@ -14,7 +14,7 @@ test('Qdrant client is read-only and normalizes nearest-neighbor results', async
 
 test('Qdrant admin client uses the documented collection, point, count, and alias endpoints', async () => {
   const calls = [];
-  const client = createQdrantClient({
+  const client = createQdrantAdminClient({
     endpoint: 'https://qdrant.example',
     apiKey: 'key',
     collection: 'ekphrasis-clip-current',
