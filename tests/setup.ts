@@ -1,1 +1,3 @@
-import "@testing-library/jest-dom/vitest";
+import { File as NodeFile } from "node:buffer";
+
+Object.assign(globalThis, { File: NodeFile });
