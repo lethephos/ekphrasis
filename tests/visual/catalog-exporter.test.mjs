@@ -17,5 +17,6 @@ test('Rijksmuseum, AIC, and Smithsonian normalizers produce the same corpus shap
 
 test('catalog exporter paginates and rejects records without source images', async () => {
   const exporter = createCatalogExporter({ fetchImpl: fetchJson({ objectIDs:[1,2], total:2 }) });
-  await assert.rejects(() => exporter.exportMet({ limit: 2 }), /MET_DETAIL_REQUIRED/);
+  const records = await exporter.exportMet({ limit: 2 });
+  assert.deepEqual(records, []);
 });
