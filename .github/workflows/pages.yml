@@ -4,7 +4,6 @@ on:
   push:
     branches: [main]
     paths:
-      - "site/**"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -24,8 +23,10 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout dashboard branch
         uses: actions/checkout@v4
+        with:
+          ref: feature/github-pages-dashboard
 
       - name: Validate JavaScript
         run: |
