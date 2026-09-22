@@ -2,7 +2,8 @@ name: Deploy Ekphrasis Dashboard
 
 on:
   push:
-    branches: [main]
+    branches:
+      - feature/github-pages-dashboard
     paths:
       - "site/**"
       - ".github/workflows/pages.yml"
