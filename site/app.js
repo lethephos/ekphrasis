@@ -136,7 +136,7 @@ function renderResult() {
     <div class="result-layout">
       <div>
         <div class="art-frame" id="art-frame">
-          <img src="${esc(r.source.imageUrl)}" alt="${esc(a.title)} — ${esc(a.artist)}" id="art-image">
+          <img src="${esc(r.source.previewImageUrl || r.source.imageUrl)}" alt="${esc(a.title)} — ${esc(a.artist)}" id="art-image">
         </div>
         <div class="source-label">ORIGINAL ARTWORK IMAGE · ${esc(r.source.institution)} · SOURCE ID ${esc(r.source.objectId)}</div>
       </div>
