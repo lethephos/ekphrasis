@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import type { IdentificationResult } from "../types";
 
 export interface ResultCache {
@@ -5,7 +6,6 @@ export interface ResultCache {
   set(hash: string, result: IdentificationResult): Promise<void>;
 }
 
-export async function sha256(bytes: Uint8Array): Promise<string> {
-  const digest = await crypto.subtle.digest("SHA-256", bytes);
-  return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+export function sha256(bytes: Uint8Array): string {
+  return createHash("sha256").update(bytes).digest("hex");
 }
