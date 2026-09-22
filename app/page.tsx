@@ -8,7 +8,7 @@ import { MatchCard } from "../components/match-card";
 import { NoMatch } from "../components/no-match";
 import { ErrorState } from "../components/error-state";
 
-export default function Home({
+export function Home({
   initialState = "IDLE",
   result: initialResult
 }: {
@@ -33,4 +33,7 @@ export default function Home({
       {result?.state === "ERROR" ? <ErrorState code={result.error} /> : null}
     </main>
   );
+}
+export default function Page() {
+  return <Home />;
 }
