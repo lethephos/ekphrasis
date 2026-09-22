@@ -20,6 +20,7 @@ body {
   font-family: var(--sans); line-height: 1.45;
 }
 a { color: inherit; }
+a:focus-visible { outline: 2px solid var(--paper); outline-offset: 3px; }
 .topbar {
   height: 64px; border-bottom: 1px solid var(--line); display:flex;
   align-items:center; justify-content:space-between; padding:0 32px;
