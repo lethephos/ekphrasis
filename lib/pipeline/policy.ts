@@ -1,3 +1,4 @@
+export type { ProviderFailureClass } from "../types";
 import type { ProviderFailureClass } from "../types";
 
 export type FailureDecision = "continue" | "degrade" | "fallback" | "api_unavailable";
