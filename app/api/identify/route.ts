@@ -12,8 +12,6 @@ import { HttpClipEncoder } from "../../../lib/clip/http";
 import { QdrantRuntimeAdapter } from "../../../lib/clip/qdrant";
 import clipIndex from "../../../data/clip/index-version.json";
 
-const limiter = new SlidingWindowRateLimiter(new UpstashRateLimitStore());
-
 export async function POST(request: Request) {
   const form = await request.formData();
   const file = form.get("image");
@@ -27,6 +25,7 @@ export async function POST(request: Request) {
   }
 
   try {
+    const limiter = new SlidingWindowRateLimiter(new UpstashRateLimitStore());
     const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
     const identity = await createRequestIdentity(forwarded, secret);
     const rate = await limiter.check(identity);
