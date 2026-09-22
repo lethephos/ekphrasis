@@ -1,0 +1,12 @@
+name: Dashboard preview check
+on:
+  push:
+    branches:
+      - feature/github-pages-dashboard
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: node --check site/app.js
+      - run: node --check site/data/demo-run.js
