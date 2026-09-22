@@ -93,7 +93,7 @@ export async function identifyImage(request: IdentifyRequest, deps: IdentifyDeps
           deps.clip.index,
           deps.clip.encoder,
           deps.clip.qdrant,
-          async refs => refs
+          async refs => refs.flatMap(ref => ref.candidate ? [ref.candidate] : [])
         );
         candidates = evidenceCandidates(fallback, queries);
         selection = selectCanonicalCandidate(scoreCandidates(candidates), ["met", "rijksmuseum", "aic", "smithsonian"]);
