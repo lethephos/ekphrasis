@@ -25,4 +25,5 @@ test('artifact manifest records model, collection, corpus count, and provenance'
   assert.equal(manifest.pointCount, 1);
   assert.deepEqual(manifest.sourceCounts, { 'The Metropolitan Museum of Art': 1 });
   assert.equal(manifest.artifacts[0].sha256, 'abc');
+  assert.deepEqual(Object.keys(manifest).sort(), ['artifacts', 'collection', 'dimensions', 'model', 'pointCount', 'sourceCounts']);
 });
