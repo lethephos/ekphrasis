@@ -13,6 +13,20 @@ import { SmithsonianAdapter } from "../../../lib/museums/smithsonian";
 import { HttpClipEncoder } from "../../../lib/clip/http";
 import { QdrantRuntimeAdapter } from "../../../lib/clip/qdrant";
 import clipIndex from "../../../data/clip/index-version.json";
+import type { ClipCandidateRef } from "../../../lib/clip/types";
+import type { ArtworkCandidate } from "../../../lib/types";
+
+async function hydrateClipCandidates(refs: ClipCandidateRef[], museums: Array<MetAdapter | RijksmuseumAdapter | ArticAdapter | SmithsonianAdapter>): Promise<ArtworkCandidate[]> {
+  const bySource = new Map(museums.map(museum => [museum.id, museum]));
+  const hydrated = await Promise.all(refs.filter(ref => !ref.candidate).map(async ref => {
+    const separator = ref.artworkId.indexOf(":");
+    if (separator <= 0) return null;
+    const adapter = bySource.get(ref.artworkId.slice(0, separator));
+    if (!adapter?.getById) return null;
+    return adapter.getById(ref.artworkId.slice(separator + 1));
+  }));
+  return hydrated.filter((candidate): candidate is ArtworkCandidate => Boolean(candidate));
+}
 
 export async function POST(request: Request) {
   const form = await request.formData();
@@ -55,7 +69,8 @@ export async function POST(request: Request) {
           ? {
               encoder: new HttpClipEncoder(),
               qdrant: new QdrantRuntimeAdapter(),
-              index: clipIndex
+              index: clipIndex,
+              hydrate: refs => hydrateClipCandidates(refs, [new MetAdapter(), new RijksmuseumAdapter(), new ArticAdapter(), new SmithsonianAdapter()])
             }
           : undefined
       }
