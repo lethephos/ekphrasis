@@ -23,6 +23,6 @@ test('creates a versioned collection and upserts CLIP points', async () => {
 });
 
 test('rejects upsert into an unversioned collection name', async () => {
-  const index = createQdrantIndex({ client: {}, collection: 'ekphrasis-clip', dimensions: 512 });
+  const index = createQdrantIndex({ client: { async createCollection() {}, async upsert() {} }, collection: 'ekphrasis-clip', dimensions: 512 });
   await assert.rejects(() => index.upsert('latest', []), /INVALID_COLLECTION_VERSION/);
 });
