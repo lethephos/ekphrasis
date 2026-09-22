@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
-import Home from "../../app/page";
+import { Home } from "../../app/page";
 
 describe("result states", () => {
   it("shows the processing copy without provider-specific stages", () => {
