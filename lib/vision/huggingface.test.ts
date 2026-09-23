@@ -15,4 +15,15 @@ describe("HuggingFaceVisionAdapter", () => {
   it("fails clearly when the token is missing", async () => {
     await expect(new HuggingFaceVisionAdapter("").detect(Buffer.from("image"))).rejects.toMatchObject({ provider: "vision", failure: "AUTH" });
   });
+
+  it("allows enough time for Hugging Face vision cold starts", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify({
+      choices: [{ message: { content: JSON.stringify({ candidates: [{ text: "Girl with a Pearl Earring" }] }) } }]
+    }), { status: 200, headers: { "Content-Type": "application/json" } }));
+    const timeoutMock = vi.spyOn(AbortSignal, "timeout");
+    await new HuggingFaceVisionAdapter("hf_test").detect(Buffer.from("image"));
+    expect(timeoutMock).toHaveBeenCalledWith(30000);
+    fetchMock.mockRestore();
+    timeoutMock.mockRestore();
+  });
 });
