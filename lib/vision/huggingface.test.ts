@@ -26,4 +26,16 @@ describe("HuggingFaceVisionAdapter", () => {
     fetchMock.mockRestore();
     timeoutMock.mockRestore();
   });
+
+  it("emits boundary diagnostics without exposing the token", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify({
+      choices: [{ message: { content: JSON.stringify({ candidates: [{ text: "Girl with a Pearl Earring" }] }) } }]
+    }), { status: 200, headers: { "Content-Type": "application/json" } }));
+    const log = vi.fn();
+    await new HuggingFaceVisionAdapter("hf_secret", log).detect(Buffer.from("image"));
+    expect(log).toHaveBeenCalledWith("vision.start", expect.objectContaining({ model: expect.any(String), bytes: 5 }));
+    expect(log).toHaveBeenCalledWith("vision.response", expect.objectContaining({ status: 200, elapsedMs: expect.any(Number) }));
+    expect(log.mock.calls.flat().join(" ")).not.toContain("hf_secret");
+    fetchMock.mockRestore();
+  });
 });
