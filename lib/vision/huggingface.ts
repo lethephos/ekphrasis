@@ -5,6 +5,7 @@ export interface VisionAdapter { detect(image: Buffer): Promise<VisionDetection>
 type ChatResponse = { choices?: Array<{ message?: { content?: string | Array<{ type?: string; text?: string }> } }> };
 const MODEL = process.env.HF_VISION_MODEL ?? "Qwen/Qwen2.5-VL-3B-Instruct";
 const ENDPOINT = "https://router.huggingface.co/v1/chat/completions";
+const VISION_TIMEOUT_MS = 30_000;
 
 function parseDetection(raw: string): VisionDetection {
   const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)\s*```/i)?.[1];
@@ -26,7 +27,7 @@ export class HuggingFaceVisionAdapter implements VisionAdapter {
       { type: "image_url", image_url: { url: "data:image/jpeg;base64," + image.toString("base64") } }
     ] }], temperature: 0, max_tokens: 300 };
     try {
-      const response = await fetch(ENDPOINT, { method: "POST", headers: { Authorization: "Bearer " + this.token, "Content-Type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.timeout(7500) });
+      const response = await fetch(ENDPOINT, { method: "POST", headers: { Authorization: "Bearer " + this.token, "Content-Type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.timeout(VISION_TIMEOUT_MS) });
       if (response.status === 401 || response.status === 403) throw new ProviderError("vision", "AUTH", "Hugging Face authentication failed.");
       if (response.status === 429) throw new ProviderError("vision", "RATE_LIMITED", "Hugging Face rate limit reached.");
       if (!response.ok) throw new ProviderError("vision", "PROVIDER_ERROR", "Hugging Face vision request failed.");
